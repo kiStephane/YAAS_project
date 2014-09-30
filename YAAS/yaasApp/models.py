@@ -1,3 +1,8 @@
+# Create your models here.
+from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
+
+class Auction(models.Model):
+    creation_date = models.DateField()
+    author = models.ForeignKey(User)

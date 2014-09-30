@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Welcome to YAAS : Sign in</title>
+</head>
+<body>
+{% if info %}
+    <h1>{{info}}≈</h1>
+{% endif %}
+
+<h2>Sign in</h2>
+<form action="/signin/" method="POST">
+    {% csrf_token %}
+    <label for="email"> Email </label>
+    <input type="text" id="email" name="email"><br>
+
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username"><br>
+
+    <label for="password">Password </label>
+    <input type="password" id="password" name="password"><br>
+
+    <input type="submit" value="Submit">
+</form>
+<hr>
+<h2>New to YAAS ?</h2>
+<p>Get Started now. It is fast and easy!</p>
+<a type="button" href="/register/">Register</a>
+</body>
+</html>
