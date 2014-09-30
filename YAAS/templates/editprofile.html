@@ -2,21 +2,13 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Sign Up</title>
+    <title>Edit profile</title>
 </head>
 <body>
+<h1> Edit your profile </h1>
 
-    <form action= "/register/" method="POST">
+    <form action= "/editprofile/{{ username }}" method="POST">
     {% csrf_token %}
-    <label for="firstname">First name</label>
-    <input type="text" name="firstname" id="firstname"><br>
-
-    <label for="lastname">Last name</label>
-    <input type="text" name="lastname" id="lastname"><br>
-
-    <label for="username">User name</label>
-    <input type="text" name="username" id="username"><br>
-
     <label for="email">E-mail</label>
     <input type="text" name="email" id="email"><br>
 

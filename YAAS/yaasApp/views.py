@@ -24,13 +24,13 @@ def register(request):
 
 def sign_in(request):
     if request.method == "POST":
-        if request.POST.has_key("username") and request.POST.has_key("pwd"):
-            user = authenticate(username=request.POST["username"], password=request.POST["pwd"])
+        if request.POST.has_key("username") and request.POST.has_key("password"):
+            user = authenticate(username=request.POST["username"], password=request.POST["password"])
             if user is not None:
                 # the password verified for the user
                 if user.is_active:
                     print("User is valid, active and authenticated")
-                    return render_to_response("userprofile.html", {},
+                    return render_to_response("userprofile.html", {"user" : user},
                                               context_instance=RequestContext(request)
                     )
                 else:
@@ -55,8 +55,16 @@ def sign_in(request):
     )
 
 
+def edit_profile(request, username):
+    if request.method == "GET":
+        return render_to_response("editprofile.html", {"username": username},
+                                  context_instance=RequestContext(request)
+        )
+    else:
+        return ""
+
+
 def show_home(request):
-    return render_to_response("index.html",
-        {},
+    return render_to_response("index.html",{},
                               context_instance=RequestContext(request)
     )
