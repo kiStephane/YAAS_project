@@ -30,7 +30,9 @@ def sign_in(request):
                 # the password verified for the user
                 if user.is_active:
                     print("User is valid, active and authenticated")
-                    return render_to_response("userprofile.html", {"user" : user},
+                    request.session['user_username'] = user.username
+                    request.session['user_password'] = user.password
+                    return render_to_response("userprofile.html", {"user": user},
                                               context_instance=RequestContext(request)
                     )
                 else:
@@ -55,16 +57,34 @@ def sign_in(request):
     )
 
 
-def edit_profile(request, username):
+def edit_profile(request):
     if request.method == "GET":
-        return render_to_response("editprofile.html", {"username": username},
+        return render_to_response("editprofile.html", {"username": request.session['user_username']},
                                   context_instance=RequestContext(request)
         )
-    else:
-        return ""
+    elif request.method == "POST":
+        if request.POST.has_key("email") and request.POST.has_key("password"):
+            new_email = request.POST["email"]
+            new_password = request.POST["password"]
+            print request.session['user_username']
+            print request.session['user_password']
+            user = authenticate(username=request.session['user_username'], password=request.session['user_password'])
+            if user is not None:
+                print "Hereeeeeeeee"
+                user.password = new_password
+                user.email = new_email
+                user.save()
+                request.session['user'] = user
+                return render_to_response("userprofile.html", {"user": user},
+                                              context_instance=RequestContext(request)
+                )
+
+        return render_to_response("editprofile.html", {"username": request.session['user_username']},
+                                  context_instance=RequestContext(request)
+        )
 
 
 def show_home(request):
-    return render_to_response("index.html",{},
+    return render_to_response("index.html", {},
                               context_instance=RequestContext(request)
     )

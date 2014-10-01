@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^signin/$', 'yaasApp.views.sign_in'),
     url(r'^home/$', 'yaasApp.views.show_home'),
     url(r'^$', 'yaasApp.views.show_home'),
-    url(r'^editprofile/(?P<username>\w+)/$', 'yaasApp.views.edit_profile'),
+    url(r'^editprofile/$', 'yaasApp.views.edit_profile'),
 
 
 

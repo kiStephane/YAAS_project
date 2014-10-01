@@ -4,5 +4,6 @@ from django.db import models
 
 
 class Auction(models.Model):
+    title = models.CharField(max_length=30)
     creation_date = models.DateField()
-    author = models.ForeignKey(User)
+    seller = models.ForeignKey(User)
