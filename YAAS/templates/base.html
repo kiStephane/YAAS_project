@@ -1,0 +1,19 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+    <h1>YAAS</h1>
+    {% block content %}{% endblock %}
+    {% block footer %}
+    <hr>
+    <p>{% trans "Thanks for visiting my site." %}</p>
+    <p>{% trans "Created by: Stephane KI" %}</p>
+    {% endblock %}
+
+</body>
+</html>

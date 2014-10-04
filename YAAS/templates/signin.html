@@ -1,31 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>Welcome to YAAS : Sign in</title>
-</head>
-<body>
-{% if info %}
-    <h1>{{info}}≈</h1>
-{% endif %}
+{% extends "base.html" %}
 
-<h2>Sign in</h2>
-<form action="/signin/" method="POST">
-    {% csrf_token %}
-    <label for="email"> Email </label>
-    <input type="text" id="email" name="email"><br>
+{% block content %}
 
-    <label for="username">Username</label>
-    <input type="text" id="username" name="username"><br>
+<p><b>{{ error }}</b></p>
+  {% if form.errors%}
+    <p> Password or username is incorrect </p>
+  {% endif %}
 
-    <label for="password">Password </label>
-    <input type="password" id="password" name="password"><br>
+    <form action="" method="post">
+        {% csrf_token %}
+        <label for="username">Username :</label>
+        <input type="text" name="username" value="" id="username">
+        <label for="password">Password :</label>
+        <input type="password" name="password" value="" id="password">
 
-    <input type="submit" value="Submit">
-</form>
-<hr>
-<h2>New to YAAS ?</h2>
-<p>Get Started now. It is fast and easy!</p>
-<a type="button" href="/register/">Register</a>
-</body>
-</html>
+        <input type="submit" value="Submit">
+        <input type="hidden" name="next" value="signinpage">
+    </form>
+
+{% endblock %}

@@ -7,19 +7,11 @@
 <body>
 <h1> Edit your profile </h1>
 
-    <form action= "/editprofile/" method="POST">
-    {% csrf_token %}
-    <label for="email">E-mail</label>
-    <input type="text" name="email" id="email"><br>
-
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password"><br>
-
-    <label for="password_confirmation">Confirm password</label>
-    <input type="password" name="password_confirmation" id="password_confirmation"><br>
-
-    <input type="submit" value="Submit">
-    </form>
+<form action="" method="post">
+        {% csrf_token %}
+         {{ form.as_p }}
+        <input type="submit" value="Submit">
+</form>
 
 </body>
 </html>

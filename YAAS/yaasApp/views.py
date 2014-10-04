@@ -3,83 +3,82 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.views import logout
+from yaasApp.forms import *
 
 
 def register(request):
-    if request.method == "POST":
-        if request.POST.has_key("username") and request.POST.has_key("password"):
-            user = User.objects.create_user(username=request.POST["username"],
-                                            email=request.POST["email"],
-                                            password=request.POST["password"])
-            return render_to_response("userprofile.html", {"user": user},
-                                      context_instance=RequestContext(request)
-            )
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            message = "New User is created. Please Login"
+            return render_to_response("index.html", {'msg': message}, context_instance=RequestContext(request))
+    else:
+        form = UserCreationForm()
+    return render_to_response("registration.html", {'form': form}, context_instance=RequestContext(request))
 
-    elif request.method == "GET":
-        return render_to_response("register.html", {},
-                                  context_instance=RequestContext(request)
-        )
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            message = "Password set"
+            return render_to_response("userprofile.html", {'msg': message}, context_instance=RequestContext(request))
+        else:
+            print 'Non valid'
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render_to_response("changepassword.html", {'form': form},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def edit_profile(request):
+    if request.POST:
+        user_form = EditProfileForm(request.POST, instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            return HttpResponseRedirect('/profile/')
+    else:
+        user_form = EditProfileForm()
+    return render_to_response('editprofile.html', {'form': user_form}, context_instance=RequestContext(request))
 
 
 def sign_in(request):
     if request.method == "POST":
-        if request.POST.has_key("username") and request.POST.has_key("password"):
-            user = authenticate(username=request.POST["username"], password=request.POST["password"])
-            if user is not None:
-                # the password verified for the user
-                if user.is_active:
-                    print("User is valid, active and authenticated")
-                    request.session['user_username'] = user.username
-                    request.session['user_password'] = user.password
-                    return render_to_response("userprofile.html", {"user": user},
-                                              context_instance=RequestContext(request)
-                    )
-                else:
-                    info = "The password is valid, but the account has been disabled!"
-                    return render_to_response("signin.html", {"info": info},
-                                              context_instance=RequestContext(request)
-                    )
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        next_to = request.GET.get('next', '/home/')
+        user = authenticate(username=username, password=password)
+        if user is not None and user.is_active:
+            auth.login(request, user)
+            return HttpResponseRedirect(next_to)
         else:
-            # the authentication system was unable to verify the username and password
-            info = "The username and password were incorrect."
-            return render_to_response("signin.html", {"info": info},
-                                      context_instance=RequestContext(request)
-            )
+            error = "Wrong username or password ! ! !"
+            return render_to_response("signin.html", {'error': error}, context_instance=RequestContext(request))
 
-    elif request.method == "GET":
-        return render_to_response("signin.html", {},
-                                  context_instance=RequestContext(request)
-        )
-
-    return render_to_response("index.html", {},
-                              context_instance=RequestContext(request)
-    )
+    else:
+        error = "Please Sign in"
+        return render_to_response("signin.html", {'error': error}, context_instance=RequestContext(request))
 
 
-def edit_profile(request):
-    if request.method == "GET":
-        return render_to_response("editprofile.html", {"username": request.session['user_username']},
-                                  context_instance=RequestContext(request)
-        )
-    elif request.method == "POST":
-        if request.POST.has_key("email") and request.POST.has_key("password"):
-            new_email = request.POST["email"]
-            new_password = request.POST["password"]
-            print request.session['user_username']
-            print request.session['user_password']
-            user = authenticate(username=request.session['user_username'], password=request.session['user_password'])
-            if user is not None:
-                print "Hereeeeeeeee"
-                user.password = new_password
-                user.email = new_email
-                user.save()
-                request.session['user'] = user
-                return render_to_response("userprofile.html", {"user": user},
-                                              context_instance=RequestContext(request)
-                )
+def sign_out(request):
+    logout(request, template_name="index.html")
+    return HttpResponseRedirect("/home/")
 
-        return render_to_response("editprofile.html", {"username": request.session['user_username']},
+
+def show_profile(request):
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect('/signin/?next=%s' % request.path)
+    else:
+        user = request.user
+        return render_to_response("userprofile.html", {"user_name": user.username, "user_email": user.email},
                                   context_instance=RequestContext(request)
         )
 
