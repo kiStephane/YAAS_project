@@ -1,0 +1,21 @@
+{% extends "base2.html" %}
+
+
+<h2> Add Auction</h2>
+{% block content %}
+
+<p><b>Confirm Auction </b></p>
+{% if error %}
+  {{ error}}
+{% endif %}
+
+<b>{{auction_title}}</b>
+
+    <form action="/saveauction/" method="post">
+        {% csrf_token %}
+         {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+
+
+{% endblock %}

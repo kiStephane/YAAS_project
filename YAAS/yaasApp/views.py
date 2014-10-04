@@ -10,6 +10,46 @@ from django.contrib.auth.views import logout
 from yaasApp.forms import *
 
 
+@login_required
+def create_auction(request):
+    if not request.method == 'POST':
+        form = AuctionCreationForm()
+        return render_to_response('createauction.html', {'form': form}, context_instance=RequestContext(request))
+    else:
+        form = AuctionCreationForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            auction_title = cd['title']
+            request.session['auction_date'] = cd
+            form = ConfirmationForm()
+            return render_to_response('confirmation.html', {'form': form, 'auction_title': auction_title},
+                                      context_instance=RequestContext(request))
+        else:
+            form = AuctionCreationForm()
+            return render_to_response('createauction.html', {'form': form, "error": "Not valid data"},
+                                      context_instance=RequestContext(request))
+
+
+@login_required
+def save_auction(request):
+    option = request.POST.get('option', '')
+    if option == 'Yes':
+        data = request.session['auction_date']
+        auction = Auction(title=data['title'],
+                          description=data["description"],
+                          creation_date=data["creation_date"],
+                          deadline=data["deadline"],
+                          seller=request.user)
+        auction.save()
+        message = "New auction has been saved"
+        return render_to_response('done.html', {'mesg': message}, context_instance=RequestContext(request))
+    else:
+        error = "Auction is not saved"
+        form = AuctionCreationForm()
+        return render_to_response('createauction.html', {'form': form, 'error': error},
+                                  context_instance=RequestContext(request))
+
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)

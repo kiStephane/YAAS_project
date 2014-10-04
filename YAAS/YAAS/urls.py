@@ -17,6 +17,8 @@ urlpatterns = patterns('',
     url(r'^profile/$', show_profile),
     url(r'^editprofile/$', edit_profile),
     url(r'^changepassword/$', change_password),
+    url(r'^createauction/$', create_auction),
+    url(r'^saveauction/$', save_auction),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
