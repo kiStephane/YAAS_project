@@ -7,6 +7,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
+from datetime import datetime
 from yaasApp.forms import *
 
 
@@ -37,17 +38,33 @@ def save_auction(request):
         data = request.session['auction_date']
         auction = Auction(title=data['title'],
                           description=data["description"],
-                          creation_date=data["creation_date"],
+                          creation_date=datetime.now(),
                           deadline=data["deadline"],
+                          minimum_price=data["minimum_price"],
                           seller=request.user)
         auction.save()
         message = "New auction has been saved"
-        return render_to_response('done.html', {'mesg': message}, context_instance=RequestContext(request))
+        return render_to_response('done.html', {'message': message}, context_instance=RequestContext(request))
     else:
         error = "Auction is not saved"
         form = AuctionCreationForm()
         return render_to_response('createauction.html', {'form': form, 'error': error},
                                   context_instance=RequestContext(request))
+
+
+@login_required
+def edit_auction(request, a_id):
+    auction = Auction.objects.get(id=a_id)
+    if not auction is None:
+        if auction in request.user.auction_set.all():
+            if request.method != "POST":
+                return render_to_response('editauction.html', {'auction': auction},
+                                          context_instance=RequestContext(request))
+            else:
+                auction.description = request.POST.get("description")
+                auction.save()
+
+    return HttpResponseRedirect("/profile/")
 
 
 def register(request):
@@ -118,12 +135,16 @@ def show_profile(request):
         return HttpResponseRedirect('/signin/?next=%s' % request.path)
     else:
         user = request.user
-        return render_to_response("userprofile.html", {"user_name": user.username, "user_email": user.email},
+        auctions = user.auction_set.all()
+        return render_to_response("userprofile.html", {"user_name": user.username,
+                                                       "user_email": user.email,
+                                                       "auctions": auctions},
                                   context_instance=RequestContext(request)
         )
 
 
 def show_home(request):
-    return render_to_response("index.html", {},
+    auctions= Auction.objects.all()
+    return render_to_response("index.html", {"auctions": auctions},
                               context_instance=RequestContext(request)
     )

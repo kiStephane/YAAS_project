@@ -9,8 +9,20 @@
 <h1>Profile of : {{ user_name }}</h1>
 <h2>Email: {{ user_email }}</h2>
 
+{% for auction in auctions %}
+    <h3>Auction title: {{ auction.title }}</h3> <br>
+
+    <label for="id_desc"> Description </label>
+    <textarea id="id_desc" readonly cols="30" rows="10">{{ auction.description }}</textarea> <br>
+
+    <a href="/editauction/{{ auction.id }}"> Edit</a>
+    <hr>
+{% endfor %}
+
 <a href="/editprofile/"> Edit profile </a> <br>
-<a href="/changepassword/"> Change password </a>
-<a href="/createauction/"> Create new auction </a>
+<a href="/changepassword/"> Change password </a> <br>
+<a href="/createauction/"> Create new auction </a> <br>
+<a href="/logout/"> Log out </a>
+
 </body>
 </html>

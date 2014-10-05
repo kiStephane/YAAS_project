@@ -18,10 +18,9 @@ class AuctionTestCase(TestCase):
     def setUp(self):
         self.seller = User.objects.create(username='test', password='test')
         self.my_auction = Auction.objects.create(id=0, seller=self.seller, creation_date=datetime(2014, 10, 1),
-                                                 deadline=datetime(2014, 10, 4))
+                                                 deadline=datetime(2014, 10, 4), minimum_price=3000)
         self.my_auction.title = "Car"
         self.my_auction.description = "Description of my car"
-        self.my_auction.minimum_price = 3000
 
     def tearDown(self):
         pass

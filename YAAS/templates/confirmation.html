@@ -1,6 +1,5 @@
 {% extends "base2.html" %}
 
-
 <h2> Add Auction</h2>
 {% block content %}
 
@@ -9,12 +8,12 @@
   {{ error}}
 {% endif %}
 
-<b>{{auction_title}}</b>
+<b>Auction title : {{auction_title}}</b>
 
     <form action="/saveauction/" method="post">
         {% csrf_token %}
          {{ form.as_p }}
-        <input type="submit" value="Submit">
+        <input type="submit" value="Confirm">
     </form>
 
 
