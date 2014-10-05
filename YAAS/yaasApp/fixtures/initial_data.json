@@ -1,0 +1,12 @@
+[
+  {
+    "model": "yaasApp.user",
+    "pk": 1,
+    "fields": {
+      "first_name": "Barack",
+      "last_name": "OBAMA",
+      "username": "mister_president",
+      "password": "1234"
+    }
+  }
+]
