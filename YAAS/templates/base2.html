@@ -1,13 +1,60 @@
+{% load staticfiles %}
 <html>
-<style type= "text/css">
-    body {color: #efd; background: #453; padding: 0 5em; margin:0}
-    h1 {padding: 2em 1em; background: #675}
-    h2 {color: #bf8; border-top: 1px dotted #fff; margin-top: 2em}
-    p {margin: 1em 0}
-</style>
+<head>
+  <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+</head>
+
 <body>
-<h1>YAAS</h1>
-{% block content %}
-{% endblock %}
+
+    <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="#" class="navbar-brand">YAAS</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/home/">Home</a></li>
+            <li><a href="#browse">Browse</a></li>
+              <li><a href="#">Link</a></li>
+
+          </ul>
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% block signin_user %}
+                    <li ><a href="/signin/">Sign in</a></li>
+                {% endblock %}
+
+
+                <li ><a href="/register/">Sign up</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+
+      </div>
+    </div>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+
+    <hr>
+    <footer>
+        <p>&copy; Dev of web applications and Web Services 2014</p>
+     </footer>
+    </div>
+
+    <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 </body>
 </html>

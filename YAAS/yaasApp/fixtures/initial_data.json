@@ -1,12 +1,28 @@
 [
-  {
-    "model": "yaasApp.user",
-    "pk": 1,
-    "fields": {
-      "first_name": "Barack",
-      "last_name": "OBAMA",
-      "username": "mister_president",
-      "password": "1234"
+    {"pk": 1,
+        "model": "yaasApp.auction",
+        "fields": {
+            "description": "This is a new car",
+            "minimum_price": 2000,
+            "title": "TOYOTA Carina",
+            "creation_date": "2014-10-05T16:15:32.905Z",
+            "state": "active",
+            "deadline": "2014-10-25T17:10:12Z",
+            "seller": 2
+        }
+    },
+
+    {"pk": 2,
+        "model": "yaasApp.auction",
+        "fields": {
+            "description": "This book does not exist",
+            "minimum_price": 300,
+            "title": "Steeve Jobs - a robber",
+            "creation_date": "2014-10-05T17:11:11.089Z",
+            "state": "active",
+            "deadline": "2014-10-25T17:10:12Z",
+            "seller": 3
+        }
     }
-  }
 ]
+

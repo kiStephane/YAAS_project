@@ -1,4 +1,11 @@
 {% extends "base2.html" %}
+{% block signin_user %}
+    {% if username %}
+        <li ><a href="/profile/">{{ user.username }}</a></li>
+    {% else %}
+        <li ><a href="/signin/">Sign in</a></li>
+    {% endif %}
+{% endblock %}
 {% block content %}
    <strong>{{ msg }}</strong>
 
@@ -10,6 +17,4 @@
             <hr>
     {% endfor %}
     <br>
-    <a href="/signin/"> Sign in </a> <br>
-    <a href="/profile/"> My profile </a>
 {% endblock %}

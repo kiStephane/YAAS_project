@@ -28,8 +28,9 @@ __pycache__/
 # Logs and databases #
 ######################
 *.log
-*.sql
+# *.sql
 *.sqlite
+*.sqlite3
  
 # OS generated files #
 ######################
@@ -46,4 +47,4 @@ settings.py
 
 #########################
 .idea/
-*.sqlite3
+

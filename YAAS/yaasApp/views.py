@@ -144,7 +144,8 @@ def show_profile(request):
 
 
 def show_home(request):
-    auctions= Auction.objects.all()
-    return render_to_response("index.html", {"auctions": auctions},
+    auctions = Auction.objects.all()
+    return render_to_response("index.html", {"auctions": auctions,
+                                             "username": request.user.username},
                               context_instance=RequestContext(request)
     )
