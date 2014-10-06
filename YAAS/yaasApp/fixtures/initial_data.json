@@ -1,4 +1,23 @@
 [
+
+    {"pk": 3,
+        "model": "auth.user",
+        "fields": {
+            "username": "xx",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2014-10-05T17:13:59.408Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$39r16Mvck5d3$IeVuxLaFH83Ht9wEBIPU6n+MhkYQtp8Pp1Ql1LLPsB0=",
+            "email": "",
+            "date_joined": "2014-10-05T17:10:26.304Z"}
+    },
+
+
     {"pk": 1,
         "model": "yaasApp.auction",
         "fields": {
@@ -8,7 +27,7 @@
             "creation_date": "2014-10-05T16:15:32.905Z",
             "state": "active",
             "deadline": "2014-10-25T17:10:12Z",
-            "seller": 2
+            "seller": 3
         }
     },
 
@@ -25,4 +44,19 @@
         }
     }
 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

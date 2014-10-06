@@ -1,0 +1,28 @@
+{% extends "base2.html" %}
+
+{% block title %}
+    Auction
+{% endblock %}
+
+{% block content %}
+    <h2>Title</h2>
+    <p>{{ auction.title }}</p>
+
+    <h2>Description</h2>
+    <p>{{ auction.description }}</p>
+
+    <h2>State</h2>
+    <p>{{ auction.state }}</p>
+
+    <h2>Deadline</h2>
+    <p>{{ auction.deadline }}</p>
+
+    <h2>Minimum price</h2>
+    <p>{{ auction.minimum_price }}</p>
+
+    <h2>Seller</h2>
+    <p>{{ auction.seller.username }}</p> <br>
+
+    <a href="#"> Bid this auction </a>
+
+{% endblock %}

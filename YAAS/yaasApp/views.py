@@ -13,6 +13,7 @@ from yaasApp.forms import *
 
 @login_required
 def create_auction(request):
+
     if not request.method == 'POST':
         form = AuctionCreationForm()
         return render_to_response('createauction.html', {'form': form}, context_instance=RequestContext(request))
@@ -145,7 +146,18 @@ def show_profile(request):
 
 def show_home(request):
     auctions = Auction.objects.all()
+    msg = request.session.get("error")
     return render_to_response("index.html", {"auctions": auctions,
-                                             "username": request.user.username},
+                                             "username": request.user.username,
+                                             "msg": msg},
                               context_instance=RequestContext(request)
     )
+
+
+def show_auction(request, a_id):
+    auction = Auction.objects.filter(id=a_id)
+    if auction.count() == 1:
+        return render_to_response("auction.html", {"auction": auction[0]}, context_instance=RequestContext(request))
+    else:
+        request.session["error"] = "This auction don't exist !"
+        return HttpResponseRedirect("/home/")
