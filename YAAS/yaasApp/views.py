@@ -86,10 +86,8 @@ def change_password(request):
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             form.save()
-            message = "Password set"
-            return render_to_response("userprofile.html", {'msg': message}, context_instance=RequestContext(request))
-        else:
-            print 'Non valid'
+            message = "Password set" #TODO Find a way to send this message
+            return HttpResponseRedirect("/profile/")
     else:
         form = PasswordChangeForm(user=request.user)
     return render_to_response("changepassword.html", {'form': form},
@@ -137,7 +135,7 @@ def show_profile(request):
     else:
         user = request.user
         auctions = user.auction_set.all()
-        return render_to_response("userprofile.html", {"user_name": user.username,
+        return render_to_response("userprofile.html", {"username": user.username,
                                                        "user_email": user.email,
                                                        "auctions": auctions},
                                   context_instance=RequestContext(request)
