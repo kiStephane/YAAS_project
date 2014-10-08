@@ -34,6 +34,23 @@
             "date_joined": "2014-10-07T08:59:04.102Z"}
     },
 
+    {"pk": 5,
+        "model": "auth.user",
+        "fields": {
+            "username": "ski2",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2014-10-07T13:19:22.620Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$2Kw7WbZyir8E$0vOBN10GQnBIvh5218rHC+L/6uojzj9yOdLDz4dF+fg=",
+            "email": "ski@test.fr",
+            "date_joined": "2014-10-07T08:59:04.102Z"}
+    },
+
 
     {"pk": 1,
         "model": "yaasApp.auction",

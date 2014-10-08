@@ -23,7 +23,7 @@ def create_auction(request):
         if form.is_valid():
             cd = form.cleaned_data
             auction_title = cd['title']
-            request.session['auction_date'] = cd
+            request.session['auction_data'] = cd
             form = ConfirmationForm()
             return render_to_response('confirmation.html', {'form': form,
                                                             'auction_title': auction_title,
@@ -41,10 +41,10 @@ def create_auction(request):
 def save_auction(request):
     option = request.POST.get('option', '')
     if option == 'Yes':
-        data = request.session['auction_date']
+        data = request.session['auction_data']
         auction = Auction(title=data['title'],
                           description=data["description"],
-                          creation_date=timezone.now(),
+                          creation_date=data["creation_date"],
                           deadline=data["deadline"],
                           minimum_price=data["minimum_price"],
                           seller=request.user)
@@ -205,10 +205,27 @@ def create_bid(request, a_id):
         form = BidCreationForm(request.POST)
         print request.POST
         if form.is_valid():
-            pass
+            cd = form.cleaned_data
+            request.session['bid_data'] = cd
+            form = ConfirmationForm()
+            return render_to_response('confbid.html', {'form': form,
+                                                       'auction_id': auction[0].id,
+                                                       'auction_desc': auction[0].description,
+                                                       'auction_title': auction[0],
+                                                       'username': request.user.username},
+                                      context_instance=RequestContext(request))
         else:
             form = BidCreationForm()
             return render_to_response('createbid.html', {'form': form,
                                                          'error': "Not valid data",
                                                          'username': request.user.username},
                                       context_instance=RequestContext(request))
+
+
+@login_required
+def save_bid(request):
+    option = request.POST.get('option', '')
+    if option == 'Yes':
+        pass
+    else:
+        pass

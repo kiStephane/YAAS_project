@@ -23,6 +23,19 @@ class Auction(models.Model):
         """Returns the current state of the auction """
         return 'active'
 
+    def last_bid_price(self):
+        bids = self.bid_set.all()
+        if bids.count() == 0:
+            return self.minimum_price
+        else:
+            last = None
+            for bid in bids:
+                if last is None:
+                    last = bid
+                elif last.price < bid.price:
+                    last = bid
+        return last.price
+
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction)

@@ -1,11 +1,10 @@
-import pytz
-
 __author__ = 'stephaneki'
 
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
-from django.utils import timezone
+import re
+from yaasApp.models import Auction
 
 
 class CreateBidViewTestCase(TestCase):
@@ -45,7 +44,14 @@ class CreateBidViewTestCase(TestCase):
         session_error = self.client.session.get("error_to_auction_show")
         self.assertTrue(session_error == "You cannot bid because you are the seller !")
 
-    def test_error_if_bid_under_minimum(self):
+    def test_error_if_bid_under_last_bid(self):
+        self.sign_in_first()
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 3000})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context['error'] == "Not valid data")
+
+    def test_first_bid_should_be_greater_than_minimum_price(self):
         self.sign_in_first()
         resp = self.client.post("/createbid/2", {"auction_id": 2,
                                                  "price": 300})
@@ -53,13 +59,13 @@ class CreateBidViewTestCase(TestCase):
         self.assertTrue(resp.context['error'] == "Not valid data")
 
     def test_bid_confirmation_should_contain_auction_description(self):
-        self.assertTrue(False)
-
-    def test_first_bid_should_be_greater_than_minimum_price(self):
-        self.assertTrue(False)
-
-    def test_error_if_bid_less_than_previous_bid(self):
-        self.assertTrue(False)
+        self.sign_in_first()
+        resp = self.client.post("/createbid/2", {"auction_id": 2,
+                                                 "price": 5000})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'confbid.html')
+        auction = Auction.objects.filter(id=2)[0]
+        self.assertFalse(re.search(auction.description, resp.content) is None)
 
     def test_error_if_bidder_try_to_bid_already_winning_auction(self):
         self.assertTrue(False)
