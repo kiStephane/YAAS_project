@@ -8,13 +8,15 @@
     {% block style %}{% endblock %}
     <style>
         body {
-            padding-top: 50px;
+            padding-top: 40px;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'base.css' %}">
 </head>
 
 <body>
 
+    <div id="wrap">
     <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -54,15 +56,18 @@
 
       </div>
     </div>
-
     <div class="container">
         {% block content %}
         {% endblock %}
-    <hr>
-    <footer>
-        <p class="muted credit">&copy; Dev of web applications and Web Services 2014</p>
-     </footer>
     </div>
+    <div id="push"> </div>
+    </div>
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; Dev of web applications and Web Services 2014</p>
+      </div>
+    </div>
+
 
     <script src="{% static 'jquery.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>

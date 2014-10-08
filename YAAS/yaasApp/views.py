@@ -9,14 +9,16 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
 from datetime import datetime
 from yaasApp.forms import *
+from django.utils import timezone
 
 
 @login_required
 def create_auction(request):
-
     if not request.method == 'POST':
         form = AuctionCreationForm()
-        return render_to_response('createauction.html', {'form': form}, context_instance=RequestContext(request))
+        return render_to_response('createauction.html', {'form': form,
+                                                         'username': request.user.username},
+                                  context_instance=RequestContext(request))
     else:
         form = AuctionCreationForm(request.POST)
         if form.is_valid():
@@ -24,11 +26,15 @@ def create_auction(request):
             auction_title = cd['title']
             request.session['auction_date'] = cd
             form = ConfirmationForm()
-            return render_to_response('confirmation.html', {'form': form, 'auction_title': auction_title},
+            return render_to_response('confirmation.html', {'form': form,
+                                                            'auction_title': auction_title,
+                                                            'username': request.user.username},
                                       context_instance=RequestContext(request))
         else:
             form = AuctionCreationForm()
-            return render_to_response('createauction.html', {'form': form, "error": "Not valid data"},
+            return render_to_response('createauction.html', {'form': form,
+                                                             'error': "Not valid data",
+                                                             'username': request.user.username},
                                       context_instance=RequestContext(request))
 
 
@@ -39,17 +45,21 @@ def save_auction(request):
         data = request.session['auction_date']
         auction = Auction(title=data['title'],
                           description=data["description"],
-                          creation_date=datetime.now(),
+                          creation_date=timezone.now(),
                           deadline=data["deadline"],
                           minimum_price=data["minimum_price"],
                           seller=request.user)
         auction.save()
         message = "New auction has been saved"
-        return render_to_response('done.html', {'message': message}, context_instance=RequestContext(request))
+        return render_to_response('done.html', {'message': message,
+                                                'username': request.user.username},
+                                  context_instance=RequestContext(request))
     else:
         error = "Auction is not saved"
         form = AuctionCreationForm()
-        return render_to_response('createauction.html', {'form': form, 'error': error},
+        return render_to_response('createauction.html', {'form': form,
+                                                         'error': error,
+                                                         'username': request.user.username},
                                   context_instance=RequestContext(request))
 
 
@@ -59,7 +69,8 @@ def edit_auction(request, a_id):
     if not auction is None:
         if auction in request.user.auction_set.all():
             if request.method != "POST":
-                return render_to_response('editauction.html', {'auction': auction},
+                return render_to_response('editauction.html', {'auction': auction,
+                                                               'username': request.user.username},
                                           context_instance=RequestContext(request))
             else:
                 auction.description = request.POST.get("description")
@@ -90,7 +101,8 @@ def change_password(request):
             return HttpResponseRedirect("/profile/")
     else:
         form = PasswordChangeForm(user=request.user)
-    return render_to_response("changepassword.html", {'form': form},
+    return render_to_response("changepassword.html", {'form': form,
+                                                      'username': request.user.username},
                               context_instance=RequestContext(request))
 
 
@@ -103,7 +115,9 @@ def edit_profile(request):
             return HttpResponseRedirect('/profile/')
     else:
         user_form = EditProfileForm()
-    return render_to_response('editprofile.html', {'form': user_form}, context_instance=RequestContext(request))
+    return render_to_response('editprofile.html', {'form': user_form,
+                                                   'username': request.user.username},
+                              context_instance=RequestContext(request))
 
 
 def sign_in(request):

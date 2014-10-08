@@ -13,10 +13,9 @@
     {% endif %}
 
     {% for auction in auctions %}
-            <hr>
             <h3>Auction title: <a href="/auction/{{ auction.id }}">{{ auction.title }}</a></h3> <br>
             <label for="id_desc"> Description </label>
-            <textarea id="id_desc" readonly cols="30" rows="10">{{ auction.description }}</textarea> <br>
+            <textarea id="id_desc" readonly cols="40" rows="5">{{ auction.description }}</textarea> <br>
             <p> Seller: {{ auction.seller.username }}</p>
     {% endfor %}
     <br>

@@ -3,10 +3,10 @@ __author__ = 'stephaneki'
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
+from yaasApp.models import Auction
 
 
 class ViewTestCase(TestCase):
-
     def test_is_reachable(self):
         resp = self.client.get("/home/")
         self.assertEqual(resp.status_code, 200)
@@ -21,7 +21,6 @@ class ViewTestCase(TestCase):
 
 
 class SignInViewTestCase(TestCase):
-
     def test_sign_in_form_is_reachable(self):
         resp = self.client.get("/signin/")
         self.assertEqual(resp.status_code, 200)
@@ -38,33 +37,44 @@ class SignInViewTestCase(TestCase):
         self.assertEqual(resp.context['error'], "Wrong username or password ! ! !")
 
 
-class CreateAuctionViewTestCase(TestCase):
-    my_user = None
+class BidForAnAuctionViewTestCase(TestCase):
 
-    def setUp(self):
-        self.my_user = User.objects.get(id=3)
-        self.client = Client()
-
-    def tearDown(self):
-        self.my_user = None
-
-    def test_creation_from_is_not_reachable_if_not_signed_in(self):
-        resp = self.client.get("/createauction/")
-        self.assertEqual(resp.status_code, 302, "The user is redirected because he is not logged in")
-        self.assertEqual(resp['Location'], 'http://testserver/signin/?next=/createauction/')
-
-    def test_if_user_logged_in_then_creation_form_sent(self):
-        login_successful = self.client.login(username=self.my_user.username, password="xx")
-        self.assertTrue(self.my_user.is_authenticated())
-        self.assertTrue(login_successful)
-        response = self.client.get("/createauction/")
-        self.assertTemplateUsed(response, 'createauction.html')
-
-    def test_the_minimum_price_should_be_positive(self):
+    def test_if_not_registered_then_cannot_bid(self):
         self.assertTrue(False)
 
-    def test_if_deadline_under_72_hours_after_creation_then_form_not_valid(self):
+    def test_seller_cannot_on_his_own_auction(self):
         self.assertTrue(False)
+
+    def test_error_if_bid_under_minimum(self):
+        self.assertTrue(False)
+
+    def test_bid_confirmation_should_contain_auction_description(self):
+        self.assertTrue(False)
+
+    def test_first_bid_should_be_greater_than_minimum_price(self):
+        self.assertTrue(False)
+
+    def test_error_if_bid_less_than_previous_bid(self):
+        self.assertTrue(False)
+
+    def test_error_if_bidder_try_to_bid_already_winning_auction(self):
+        self.assertTrue(False)
+
+    def test_seller_receive_email_if_new_bid_registered(self):
+        self.assertTrue(False)
+
+    def test_last_bidder_receive_email_if_new_bid_registered(self):
+        self.assertTrue(False)
+
+    def test_new_bidder_receive_email_on_bid_create(self):
+        self.assertTrue(False)
+
+    def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
+        self.assertTrue(False)
+
+
+
+
 
 
 

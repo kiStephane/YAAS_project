@@ -1,5 +1,10 @@
 {% extends "base2.html" %}
 
+{% block signin_user %}
+    {% include 'navbar_signin.html' %}
+{% endblock %}
+
+
 {% block content %}
 <p><b>Edit Auction</b></p>
   {% if error%}

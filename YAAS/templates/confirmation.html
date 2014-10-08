@@ -1,14 +1,17 @@
 {% extends "base2.html" %}
 
-<h2> Add Auction</h2>
+{% block signin_user %}
+    {% include 'navbar_signin.html' %}
+{% endblock %}
+
 {% block content %}
 
-<p><b>Confirm Auction </b></p>
+<h1>Confirm Auction </h1>
 {% if error %}
   {{ error}}
 {% endif %}
 
-<b>Auction title : {{auction_title}}</b>
+<h2>Auction title : {{auction_title}}</h2>
 
     <form action="/saveauction/" method="post">
         {% csrf_token %}
