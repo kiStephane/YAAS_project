@@ -9,8 +9,19 @@
 
 {% block content %}
     {% if msg %}
-        <strong>{{ msg }}</strong>
+        <div class="alert alert-success">
+            <span class="glyphicon glyphicon-ok"></span>
+            <strong> {{ msg }}</strong>
+        </div>
     {% endif %}
+
+    {% if error %}
+        <div class="alert alert-danger">
+            <span class="glyphicon glyphicon-remove"></span>
+            <strong> Error! {{ error }}</strong>
+        </div>
+    {% endif %}
+
 
     {% for auction in auctions %}
             <h3>Auction title: <a href="/auction/{{ auction.id }}">{{ auction.title }}</a></h3> <br>

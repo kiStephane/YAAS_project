@@ -7,7 +7,6 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
-from datetime import datetime
 from yaasApp.forms import *
 from django.utils import timezone
 
@@ -55,7 +54,7 @@ def save_auction(request):
                                                 'username': request.user.username},
                                   context_instance=RequestContext(request))
     else:
-        error = "Auction is not saved"
+        error = "Auction has not been saved"
         form = AuctionCreationForm()
         return render_to_response('createauction.html', {'form': form,
                                                          'error': error,
@@ -84,8 +83,8 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            message = "New User is created. Please Login"
-            return render_to_response("index.html", {'msg': message}, context_instance=RequestContext(request))
+            request.session["message_to_home"] = "New User is created. Please Login"
+            return HttpResponseRedirect("/home/")
     else:
         form = UserCreationForm()
     return render_to_response("registration.html", {'form': form}, context_instance=RequestContext(request))
@@ -97,7 +96,7 @@ def change_password(request):
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             form.save()
-            message = "Password set" #TODO Find a way to send this message
+            request.session["message_to_profile"] = "Password set ! ! !"
             return HttpResponseRedirect("/profile/")
     else:
         form = PasswordChangeForm(user=request.user)
@@ -126,7 +125,7 @@ def sign_in(request):
         password = request.POST.get('password', '')
         next_to = request.GET.get('next', '/home/')
         user = authenticate(username=username, password=password)
-        if user is not None and user.is_active:
+        if user is not None and is_active:
             auth.login(request, user)
             return HttpResponseRedirect(next_to)
         else:
@@ -149,19 +148,25 @@ def show_profile(request):
     else:
         user = request.user
         auctions = user.auction_set.all()
+        message = request.session.get("message_to_profile")
         return render_to_response("userprofile.html", {"username": user.username,
                                                        "user_email": user.email,
-                                                       "auctions": auctions},
+                                                       "auctions": auctions,
+                                                       "msg": message},
                                   context_instance=RequestContext(request)
         )
 
 
 def show_home(request):
     auctions = Auction.objects.all()
-    msg = request.session.get("error")
+    error = request.session.get("error_to_home")
+    message = request.session.get("message_to_home")
+    request.session["error_to_home"] = None
+    request.session["message_to_home"] = None
     return render_to_response("index.html", {"auctions": auctions,
                                              "username": request.user.username,
-                                             "msg": msg},
+                                             "error": error,
+                                             "msg": message},
                               context_instance=RequestContext(request)
     )
 
@@ -169,7 +174,41 @@ def show_home(request):
 def show_auction(request, a_id):
     auction = Auction.objects.filter(id=a_id)
     if auction.count() == 1:
-        return render_to_response("auction.html", {"auction": auction[0]}, context_instance=RequestContext(request))
+        error = request.session.get("error_to_auction_show")
+        request.session["error_to_auction_show"] = None
+        return render_to_response("auction.html", {"auction": auction[0],
+                                                   'error': error,
+                                                   "username": request.user.username},
+                                  context_instance=RequestContext(request))
     else:
-        request.session["error"] = "This auction don't exist !"
+        request.session["error_to_home"] = "Auction (id=" + str(a_id) + ") does not exist !"
         return HttpResponseRedirect("/home/")
+
+
+@login_required
+def create_bid(request, a_id):
+    auction = Auction.objects.filter(id=a_id)
+    if not request.method == 'POST':
+        if len(auction) == 0:
+            request.session["error_to_home"] = "The auction you want to bid for does not exist !"
+            return HttpResponseRedirect('/home/')
+        elif auction[0].seller == request.user:
+            request.session["error_to_auction_show"] = "You cannot bid because you are the seller !"
+            return HttpResponseRedirect('/auction/' + str(a_id))
+        else:
+            form = BidCreationForm({"auction_id": a_id})
+            return render_to_response('createbid.html', {'form': form,
+                                                         'username': request.user.username,
+                                                         'auction_id': a_id},
+                                      context_instance=RequestContext(request))
+    else:
+        form = BidCreationForm(request.POST)
+        print request.POST
+        if form.is_valid():
+            pass
+        else:
+            form = BidCreationForm()
+            return render_to_response('createbid.html', {'form': form,
+                                                         'error': "Not valid data",
+                                                         'username': request.user.username},
+                                      context_instance=RequestContext(request))

@@ -35,6 +35,19 @@ class AuctionCreationForm(forms.Form):
         return deadline
 
 
+class BidCreationForm(forms.Form):
+    auction_id = forms.IntegerField(widget=forms.HiddenInput, required=False)
+    price = forms.FloatField(label='Minimum price', min_value=0)
+
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        auction_id = self.cleaned_data.get('auction_id')
+        auction = Auction.objects.filter(id=auction_id)[0]
+        if price < (auction.minimum_price + 0.01):
+            raise forms.ValidationError("The bid must be superior to the minimum price")
+        return price
+
+
 class ConfirmationForm(forms.Form):
     CHOICES = [(x, x) for x in ("Yes", "No")]
     option = forms.ChoiceField(choices=CHOICES)

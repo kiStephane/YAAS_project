@@ -9,6 +9,12 @@
 {% endblock %}
 
 {% block content %}
+{% if error %}
+<div class="alert alert-danger">
+        <span class="glyphicon glyphicon-remove"></span>
+        <strong> Error! {{ error }}</strong>
+</div>
+{% endif %}
     <h2>Title</h2>
     <p>{{ auction.title }}</p>
 
@@ -27,6 +33,6 @@
     <h2>Seller</h2>
     <p>{{ auction.seller.username }}</p> <br>
 
-    <a href="#"> Bid this auction </a>
+    <a href="/createbid/{{ auction.id }}"> Bid this auction </a>
 
 {% endblock %}

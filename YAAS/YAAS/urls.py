@@ -33,6 +33,8 @@ urlpatterns = patterns('',
 
     url(r'^auction/(?P<a_id>\d+)$', show_auction),
 
+    url(r'^createbid/(?P<a_id>\d+)$', create_bid),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

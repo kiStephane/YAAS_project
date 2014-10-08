@@ -5,16 +5,14 @@
 {% endblock %}
 
 {% block content %}
-<h1>Add Auction</h1> <br>
+<h1>Create Bid</h1> <br>
 {% if error %}
 <div class="alert alert-danger">
         <span class="glyphicon glyphicon-remove"></span>
         <strong> Error! {{ error }}</strong>
 </div>
 {% endif %}
-{{ form.non_field_errors }}
-    {{ form.minimum_price.errors }}
-    <form action="/createauction/" method="post">
+    <form action="/createbid/{{ auction_id }}" method="post">
         {% csrf_token %}
          {{ form.as_p }}
         <button class="btn btn-lg btn-primary" type="submit">Create</button>

@@ -37,41 +37,6 @@ class SignInViewTestCase(TestCase):
         self.assertEqual(resp.context['error'], "Wrong username or password ! ! !")
 
 
-class BidForAnAuctionViewTestCase(TestCase):
-
-    def test_if_not_registered_then_cannot_bid(self):
-        self.assertTrue(False)
-
-    def test_seller_cannot_on_his_own_auction(self):
-        self.assertTrue(False)
-
-    def test_error_if_bid_under_minimum(self):
-        self.assertTrue(False)
-
-    def test_bid_confirmation_should_contain_auction_description(self):
-        self.assertTrue(False)
-
-    def test_first_bid_should_be_greater_than_minimum_price(self):
-        self.assertTrue(False)
-
-    def test_error_if_bid_less_than_previous_bid(self):
-        self.assertTrue(False)
-
-    def test_error_if_bidder_try_to_bid_already_winning_auction(self):
-        self.assertTrue(False)
-
-    def test_seller_receive_email_if_new_bid_registered(self):
-        self.assertTrue(False)
-
-    def test_last_bidder_receive_email_if_new_bid_registered(self):
-        self.assertTrue(False)
-
-    def test_new_bidder_receive_email_on_bid_create(self):
-        self.assertTrue(False)
-
-    def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
-        self.assertTrue(False)
-
 
 
 

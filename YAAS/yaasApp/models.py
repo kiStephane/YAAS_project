@@ -6,6 +6,10 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+def is_active():
+    return True
+
+
 class Auction(models.Model):
     title = models.CharField(max_length=30)
     creation_date = models.DateTimeField(default=timezone.now())
@@ -15,6 +19,13 @@ class Auction(models.Model):
     minimum_price = models.FloatField(validators=[MinValueValidator(0)])
     state = models.CharField(max_length=10, default='active')
 
+    def _get_state(self):
+        """Returns the current state of the auction """
+        return 'active'
+
 
 class Bid(models.Model):
-    pass
+    auction = models.ForeignKey(Auction)
+    price = models.FloatField()
+    bidder = models.ForeignKey(User)
+    time = models.DateTimeField(default=timezone.now())
