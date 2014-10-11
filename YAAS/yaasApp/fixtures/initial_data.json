@@ -61,7 +61,8 @@
             "creation_date": "2014-10-05T16:15:32.905Z",
             "state": "active",
             "deadline": "2014-10-25T17:10:12Z",
-            "seller": 3
+            "seller": 3,
+            "version": 1
         }
     },
 
@@ -74,7 +75,8 @@
             "creation_date": "2014-10-05T17:11:11.089Z",
             "state": "active",
             "deadline": "2014-10-25T17:10:12Z",
-            "seller": 3
+            "seller": 3,
+            "version": 0
         }
     },
 

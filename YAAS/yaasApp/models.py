@@ -18,6 +18,7 @@ class Auction(models.Model):
     seller = models.ForeignKey(User)
     minimum_price = models.FloatField(validators=[MinValueValidator(0)])
     state = models.CharField(max_length=10, default='active')
+    version = models.IntegerField(default=0)
 
     def _get_state(self):
         """Returns the current state of the auction """

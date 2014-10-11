@@ -4,8 +4,8 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
 import re
-from yaasApp.models import Auction
-
+from yaasApp.models import Auction, Bid
+from django.utils import timezone
 
 class CreateBidViewTestCase(TestCase):
     def setUp(self):
@@ -81,3 +81,46 @@ class CreateBidViewTestCase(TestCase):
 
     def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
         self.assertTrue(False)
+
+
+class ConcurrencyTestCases(TestCase):
+    def setUp(self):
+        self.my_user1 = User.objects.get(id=4)
+        self.my_user2 = User.objects.get(id=3)
+        self.client1 = Client()
+        self.client2 = Client()
+
+    def tearDown(self):
+        self.my_user1 = None
+        self.my_user2 = None
+        self.client2 = None
+        self.client1 = None
+
+    def sign_in_first(self):
+        login_successful = self.client.login(username=self.my_user1.username, password="1")
+        self.assertTrue(login_successful)
+        return login_successful
+
+    def test_user_should_bid_again_if_new_bid_before_his_bid(self):
+        self.sign_in_first()
+        self.client1.get("/createbid/1")
+        bid = Bid(price=5000, auction=Auction.objects.get(id=1), bidder=self.my_user1, time=timezone.now())
+        bid.save()
+        resp = self.client1.post("/createbid/1", {"auction_id": 1,
+                                                  "price": 4000})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "auction.html")
+        self.assertTrue(resp.context['error_concurrent_bid'] == "Someone bid before you. Bid again !")
+
+    def test_user_should_see_last_auction_description_in_confirmation_window(self):
+        self.sign_in_first()
+        self.client1.get("/createbid/1")
+        auction = Auction.objects.get(id=1)
+        auction.description = "New description"
+        auction.description_version += 1
+        auction.save()
+        resp = self.client1.post("/createbid/1", {"auction_id": 1,
+                                                  "price": 4000})
+        self.assertEqual(resp.status_code, 302)
+        self.assertTemplateUsed(resp, "confbid.html")
+        self.assertFalse(re.search("New description", resp.content) is None)

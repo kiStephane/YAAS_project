@@ -73,6 +73,7 @@ def edit_auction(request, a_id):
                                           context_instance=RequestContext(request))
             else:
                 auction.description = request.POST.get("description")
+                auction.version += 1
                 auction.save()
 
     return HttpResponseRedirect("/profile/")
@@ -172,6 +173,7 @@ def show_home(request):
 
 
 def show_auction(request, a_id):
+    # TODO Show the last bid
     auction = Auction.objects.filter(id=a_id)
     if auction.count() == 1:
         error = request.session.get("error_to_auction_show")
@@ -197,6 +199,7 @@ def create_bid(request, a_id):
             return HttpResponseRedirect('/auction/' + str(a_id))
         else:
             form = BidCreationForm({"auction_id": a_id})
+            request.session["auction_version"] = auction[0].version
             return render_to_response('createbid.html', {'form': form,
                                                          'username': request.user.username,
                                                          'auction_id': a_id},
@@ -207,13 +210,28 @@ def create_bid(request, a_id):
         if form.is_valid():
             cd = form.cleaned_data
             request.session['bid_data'] = cd
-            form = ConfirmationForm()
-            return render_to_response('confbid.html', {'form': form,
-                                                       'auction_id': auction[0].id,
-                                                       'auction_desc': auction[0].description,
-                                                       'auction_title': auction[0],
-                                                       'username': request.user.username},
-                                      context_instance=RequestContext(request))
+
+            if request.session.get("auction_version") == auction[0].version:
+                bid = Bid(price=int(cd["price"]), auction=auction[0], bidder=request.user, time=timezone.now())
+                bid.save()
+                # TODO Redirect the user to done.html
+                message = "New bid has been saved"
+                return render_to_response('done.html', {'message': message,
+                                                        'username': request.user.username},
+                                          context_instance=RequestContext(request))
+            else:
+                form = ConfirmationForm()
+                # TODO Inform the user that the description have changed
+                # TODO If someone has bid before the current user then send him back to the auction page
+                # with the message: "New bid before you, bid again"
+
+                message = "The auction has changed"
+                return render_to_response('confbid.html', {'form': form,
+                                                           'auction_id': auction[0].id,
+                                                           'auction_desc': auction[0].description,
+                                                           'auction_title': auction[0].title,
+                                                           'username': request.user.username},
+                                          context_instance=RequestContext(request))
         else:
             form = BidCreationForm()
             return render_to_response('createbid.html', {'form': form,
