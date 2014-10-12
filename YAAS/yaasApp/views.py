@@ -173,13 +173,13 @@ def show_home(request):
 
 
 def show_auction(request, a_id):
-    # TODO Show the last bid
     auction = Auction.objects.filter(id=a_id)
     if auction.count() == 1:
         error = request.session.get("error_to_auction_show")
         request.session["error_to_auction_show"] = None
         return render_to_response("auction.html", {"auction": auction[0],
                                                    'error': error,
+                                                   "last_bid":auction[0].last_bid_price(),
                                                    "username": request.user.username},
                                   context_instance=RequestContext(request))
     else:
@@ -200,33 +200,37 @@ def create_bid(request, a_id):
         else:
             form = BidCreationForm({"auction_id": a_id})
             request.session["auction_version"] = auction[0].version
+            request.session["number_of_bids"] = len(auction[0].bid_set.all())
+            error = request.session.get('error_to_create_bid')
+            request.session["error_to_create_bid"] = None
             return render_to_response('createbid.html', {'form': form,
+                                                         'error': error,
                                                          'username': request.user.username,
+                                                         'last_bid_price': auction[0].last_bid_price(),
                                                          'auction_id': a_id},
                                       context_instance=RequestContext(request))
     else:
         form = BidCreationForm(request.POST)
-        print request.POST
         if form.is_valid():
             cd = form.cleaned_data
             request.session['bid_data'] = cd
 
-            if request.session.get("auction_version") == auction[0].version:
+            if request.session.get("auction_version") == auction[0].version and request.session.get(
+                    "number_of_bids") == len(auction[0].bid_set.all()):
+
                 bid = Bid(price=int(cd["price"]), auction=auction[0], bidder=request.user, time=timezone.now())
                 bid.save()
-                # TODO Redirect the user to done.html
                 message = "New bid has been saved"
                 return render_to_response('done.html', {'message': message,
                                                         'username': request.user.username},
                                           context_instance=RequestContext(request))
-            else:
-                form = ConfirmationForm()
-                # TODO Inform the user that the description have changed
-                # TODO If someone has bid before the current user then send him back to the auction page
-                # with the message: "New bid before you, bid again"
 
-                message = "The auction has changed"
+            elif request.session.get("auction_version") != auction[0].version:
+
+                form = ConfirmationForm()
+                message = "The auction description has changed"
                 return render_to_response('confbid.html', {'form': form,
+                                                           'message': message,
                                                            'auction_id': auction[0].id,
                                                            'auction_desc': auction[0].description,
                                                            'auction_title': auction[0].title,
@@ -236,6 +240,7 @@ def create_bid(request, a_id):
             form = BidCreationForm()
             return render_to_response('createbid.html', {'form': form,
                                                          'error': "Not valid data",
+                                                         'last_bid_price': auction[0].last_bid_price(),
                                                          'username': request.user.username},
                                       context_instance=RequestContext(request))
 
@@ -243,7 +248,22 @@ def create_bid(request, a_id):
 @login_required
 def save_bid(request):
     option = request.POST.get('option', '')
+    data = request.session.get('bid_data')
     if option == 'Yes':
-        pass
+
+        auction = Auction.objects.get(id=data["auction_id"])
+
+        if request.session.get("number_of_bids") == len(auction.bid_set.all()):
+            bid = Bid(auction=auction, bidder=request.user, time=timezone.now(),
+                      price=data["price"])
+            bid.save()
+            message = "New bid registered !!!"
+            return render_to_response('done.html', {'message': message,
+                                                    'username': request.user.username},
+                                      context_instance=RequestContext(request))
+        else:
+            request.session['error_to_create_bid'] = "Someone bid before you. Bid again !"
+            return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
     else:
-        pass
+        request.session["error_to_create_bid"] = "Bid has not been saved"
+        return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))

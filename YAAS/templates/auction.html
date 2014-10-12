@@ -33,6 +33,9 @@
     <h2>Seller</h2>
     <p>{{ auction.seller.username }}</p> <br>
 
+    <h2>Last bid</h2>
+    <p>{{ last_bid }}</p> <br>
+
     <a href="/createbid/{{ auction.id }}"> Bid this auction </a>
 
 {% endblock %}

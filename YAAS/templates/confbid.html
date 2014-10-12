@@ -6,12 +6,20 @@
 
 {% block content %}
 
+    {% if message %}
+    <div class="alert alert-danger">
+            <span class="glyphicon glyphicon-remove"></span>
+            <strong> Error! {{ message }}</strong>
+    </div>
+    {% endif %}
+
     <h1>Confirm Bid</h1>
     <h2>Auction title : {{auction_title}}</h2>
     <label for="id_desc"> Description </label>
     <textarea id="id_desc" readonly cols="40" rows="5"> {{auction_desc}}</textarea>
 
-    <form action="/sauvebid/{{auction_id}}" method="post">
+
+    <form action="/savebid/" method="post">
         {% csrf_token %}
          {{ form.as_p }}
         <button class="btn btn-lg btn-primary" type="submit">Confirm</button>
