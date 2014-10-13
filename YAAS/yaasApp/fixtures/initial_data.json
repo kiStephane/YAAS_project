@@ -59,7 +59,7 @@
             "minimum_price": 2000,
             "title": "TOYOTA Carina",
             "creation_date": "2014-10-05T16:15:32.905Z",
-            "state": "active",
+            "state": 1,
             "deadline": "2014-10-25T17:10:12Z",
             "seller": 3,
             "version": 1
@@ -73,7 +73,7 @@
             "minimum_price": 300,
             "title": "Steeve Jobs - a robber",
             "creation_date": "2014-10-05T17:11:11.089Z",
-            "state": "active",
+            "state": 1,
             "deadline": "2014-10-25T17:10:12Z",
             "seller": 3,
             "version": 0
@@ -87,7 +87,7 @@
             "minimum_price": 500,
             "title": "Awsome bike",
             "creation_date": "2014-10-05T17:11:11.089Z",
-            "state": "active",
+            "state": 1,
             "deadline": "2014-10-25T17:10:12Z",
             "seller": 4
         }

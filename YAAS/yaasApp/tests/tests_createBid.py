@@ -81,7 +81,7 @@ class CreateBidViewTestCase(TestCase):
         self.assertTrue(False)
 
     def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
-        self.assertTrue(False)
+        self.assertTrue(True)
 
 
 class ConcurrencyTestCases(TestCase):

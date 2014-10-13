@@ -12,7 +12,7 @@
         <strong> Error! {{ error }}</strong>
 </div>
 {% endif %}
-    <h2>Last bid : {{last_bid_price}}</h2>
+    <h2>Minimum bid : {{minimum_bid}}</h2>
     <form action="/createbid/{{ auction_id }}" method="post">
         {% csrf_token %}
          {{ form.as_p }}

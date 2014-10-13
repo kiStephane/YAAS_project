@@ -126,7 +126,7 @@ def sign_in(request):
         password = request.POST.get('password', '')
         next_to = request.GET.get('next', '/home/')
         user = authenticate(username=username, password=password)
-        if user is not None and is_active:
+        if user is not None and user.is_active:
             auth.login(request, user)
             return HttpResponseRedirect(next_to)
         else:
@@ -179,7 +179,7 @@ def show_auction(request, a_id):
         request.session["error_to_auction_show"] = None
         return render_to_response("auction.html", {"auction": auction[0],
                                                    'error': error,
-                                                   "last_bid":auction[0].last_bid_price(),
+                                                   "last_bid": auction[0].last_bid_price(),
                                                    "username": request.user.username},
                                   context_instance=RequestContext(request))
     else:
@@ -206,7 +206,7 @@ def create_bid(request, a_id):
             return render_to_response('createbid.html', {'form': form,
                                                          'error': error,
                                                          'username': request.user.username,
-                                                         'last_bid_price': auction[0].last_bid_price(),
+                                                         'minimum_bid': auction[0].minimum_bid_price(),
                                                          'auction_id': a_id},
                                       context_instance=RequestContext(request))
     else:

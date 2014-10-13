@@ -43,8 +43,8 @@ class BidCreationForm(forms.Form):
         price = self.cleaned_data.get('price')
         auction_id = self.cleaned_data.get('auction_id')
         auction = Auction.objects.filter(id=auction_id)[0]
-        last_bid_price = auction.last_bid_price()
-        if price < (last_bid_price + 0.01):
+        minimum_bid_price = auction.minimum_bid_price()
+        if price < minimum_bid_price:
             raise forms.ValidationError("The bid must be superior to the minimum price")
         return price
 
