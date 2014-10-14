@@ -1,0 +1,24 @@
+{% extends "base2.html" %}
+{% load staticfiles %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'signin.css' %}">
+{% endblock %}
+
+{% block title %}Search results{% endblock %}
+
+{% block content %}
+
+{% if error %}
+    <div class="alert alert-danger">
+        <span class="glyphicon glyphicon-remove"></span>
+        <strong> {{ error }}</strong>
+</div>
+{% endif %}
+
+    {% if found_entries %}
+        {% for auction in found_entries %}
+            <p>{{ auction.title }} </p>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

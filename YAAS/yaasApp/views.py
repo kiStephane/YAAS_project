@@ -1,5 +1,6 @@
 # Create your views here.
-from django.http import HttpResponseRedirect
+import re
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth import authenticate
@@ -9,6 +10,7 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
 from yaasApp.forms import *
 from django.utils import timezone
+from yaasApp.search import get_query
 
 
 @login_required
@@ -267,3 +269,26 @@ def save_bid(request):
     else:
         request.session["error_to_create_bid"] = "Bid has not been saved"
         return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
+
+
+def search(request, query):
+    if 'q' in request.GET:
+        query_string = request.GET["q"]
+        entry_query = get_query(query_string, ['title'])
+        found_entries = None
+        if entry_query:
+            found_entries = Auction.objects.filter(entry_query)
+
+        error = None
+
+        if not found_entries is None:
+            if found_entries.count() == 0:
+                error = 'Nothing found in the database'
+        else:
+            error = 'Nothing found in the database'
+
+        return render_to_response('search_results.html', {'query_string': query_string,
+                                                          'found_entries': found_entries,
+                                                          'error': error}, context_instance=RequestContext(request))
+    else:
+        return HttpResponseBadRequest("Bad Request")

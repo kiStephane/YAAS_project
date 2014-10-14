@@ -1,9 +1,9 @@
+import re
+
 __author__ = 'stephaneki'
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from django.test.client import Client
-from yaasApp.models import Auction
 
 
 class ViewTestCase(TestCase):
@@ -35,6 +35,22 @@ class SignInViewTestCase(TestCase):
         resp = self.client.post("/signin/", {'username': 'test', 'password': 'test'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['error'], "Wrong username or password ! ! !")
+
+
+class SearchViewTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def tearDown(self):
+        self.client = None
+
+    def test_if_search_query_empty_result_empty(self):
+        resp = self.client.get("/search/?q=")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['error'], "Nothing found in the database")
+
+
+
 
 
 
