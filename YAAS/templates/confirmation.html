@@ -6,15 +6,22 @@
 
 {% block content %}
 
-<h1>Confirm Auction </h1>
+<h2>Confirm auction creation</h2>
 
 <h2>Auction title : {{auction_title}}</h2>
+<h2>Description</h2>
+<p> {{ auction_desc }}</p>
+
+<h2>Minimum price</h2>
+<p> {{ auction_min_price }}</p>
+
+<h2>Deadline</h2>
+<p> {{ auction_deadline }}</p>
 
     <form action="/saveauction/" method="post">
         {% csrf_token %}
          {{ form.as_p }}
         <button class="btn btn-lg btn-primary" type="submit">Confirm</button>
     </form>
-
 
 {% endblock %}

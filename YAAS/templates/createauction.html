@@ -40,7 +40,7 @@
 
     <form action="/createauction/" method="post" role="form">
         {% csrf_token %}
-        <div class="form-group">
+        <!--<div class="form-group">
         {{ form.title.errors }}
         {{ form.title.label_tag }}
         {{ form.title }}
@@ -65,7 +65,9 @@
         {{ form.minimum_price.label_tag }}
         {{ form.minimum_price }}
         {{ form.minimum_price.help_text }}
-        </div>
+        </div> -->
+
+        {{ form.as_p }}
 
         <button class="btn btn-lg btn-primary" type="submit">Create</button>
     </form>

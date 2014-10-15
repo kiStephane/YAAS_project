@@ -25,14 +25,20 @@ def create_auction(request):
         if form.is_valid():
             cd = form.cleaned_data
             auction_title = cd['title']
+            auction_desc = cd['description']
+            auction_min_price = cd['minimum_price']
+            auction_deadline = cd['deadline']
             request.session['auction_data'] = cd
             form = ConfirmationForm()
             return render_to_response('confirmation.html', {'form': form,
                                                             'auction_title': auction_title,
+                                                            'auction_desc': auction_desc,
+                                                            'auction_min_price': auction_min_price,
+                                                            'auction_deadline': auction_deadline,
                                                             'username': request.user.username},
                                       context_instance=RequestContext(request))
         else:
-            #form = AuctionCreationForm()
+            # form = AuctionCreationForm()
             return render_to_response('createauction.html', {'form': form,
                                                              #'error': "Not valid data",
                                                              'username': request.user.username},
@@ -68,7 +74,7 @@ def save_auction(request):
 def edit_auction(request, a_id):
     auction = Auction.objects.get(id=a_id)
     if not auction is None:
-        if auction in request.user.auction_set.all():
+        if auction.seller == request.user:
             if request.method != "POST":
                 return render_to_response('editauction.html', {'auction': auction,
                                                                'username': request.user.username},
@@ -77,6 +83,10 @@ def edit_auction(request, a_id):
                 auction.description = request.POST.get("description")
                 auction.version += 1
                 auction.save()
+        else:
+            request.session["message_to_profile"] = "You cannot edit this auction because you are not the seller"
+    else:
+        request.session["message_to_profile"] = "This auction does not exists"
 
     return HttpResponseRedirect("/profile/")
 

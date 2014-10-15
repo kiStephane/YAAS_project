@@ -25,7 +25,7 @@ class AuctionCreationForm(forms.Form):
     deadline = forms.DateTimeField(label="Deadline",
                                    help_text="Format: YYYY-mm-dd HH:mm:ss | Deadline should be at least"
                                              " 72h after creation",
-                                   widget=forms.TextInput(attrs={'data-format': 'MM/dd/yyyy HH:mm:ss PP'})
+                                   widget=forms.TextInput()
                                    )
     minimum_price = forms.FloatField(label='Minimum price', min_value=0,
                                      widget=forms.TextInput(attrs={'class': 'form-control'}))
