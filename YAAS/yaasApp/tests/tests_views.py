@@ -29,7 +29,6 @@ class SignInViewTestCase(TestCase):
         user = User.objects.get(id=3)
         resp = self.client.post("/signin/", {'username': user.username, 'password': user.password})
         self.assertEqual(resp.status_code, 200)
-        # self.assertEqual(resp['Location'], 'http://testserver/profile/')
 
     def test_user_with_no_account_cannot_signin(self):
         resp = self.client.post("/signin/", {'username': 'test', 'password': 'test'})
@@ -48,6 +47,16 @@ class SearchViewTestCase(TestCase):
         resp = self.client.get("/search/?q=")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['error'], "Nothing found in the database")
+        self.assertTemplateUsed(resp, "search_results.html")
+
+    def test_if_two_auctions_have_same_name_then_return_both(self):
+        resp = self.client.get("/search/?q=Awsome+bike")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['location'], 'http://testserver/results/?page=1')
+        #self.assertFalse(re.search("Stars wars bike 1", resp.content) is None)
+        #self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
+
+
 
 
 

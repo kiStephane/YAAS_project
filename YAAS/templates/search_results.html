@@ -15,10 +15,47 @@
 </div>
 {% endif %}
 
-    {% if found_entries %}
-        {% for auction in found_entries %}
-            <p>{{ auction.title }} </p>
-        {% endfor %}
-    {% endif %}
+   <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Title</th>
+            <th>Seller</th>
+            <th>Deadline</th>
+            <th>Minimum price</th>
+            <th>Last bid</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    {% for auction in auctions %}
+        <tr>
+            <td>{{ auction.id }}</td>
+            <td><a href="/auction/{{ auction.id }}">{{ auction.title }}</a></td>
+            <td>{{ auction.seller.username }}</td>
+            <td>{{ auction.deadline }}</td>
+            <td>{{ auction.minimum_price }}</td>
+            <td>{{ auction.last_bid_price }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if auctions.has_previous %}
+            <a href="/results/?page={{ auctions.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ auctions.number }} of {{ auctions.paginator.num_pages }}.
+        </span>
+
+        {% if auctions.has_next %}
+            <a href="/results/?page={{ auctions.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
 
 {% endblock %}

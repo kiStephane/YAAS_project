@@ -1,5 +1,5 @@
 # Create your views here.
-import re
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -8,8 +8,8 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
+
 from yaasApp.forms import *
-from django.utils import timezone
 from yaasApp.search import get_query
 
 
@@ -32,9 +32,9 @@ def create_auction(request):
                                                             'username': request.user.username},
                                       context_instance=RequestContext(request))
         else:
-            form = AuctionCreationForm()
+            #form = AuctionCreationForm()
             return render_to_response('createauction.html', {'form': form,
-                                                             'error': "Not valid data",
+                                                             #'error': "Not valid data",
                                                              'username': request.user.username},
                                       context_instance=RequestContext(request))
 
@@ -271,14 +271,14 @@ def save_bid(request):
         return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
 
 
-def search(request, query):
-    if 'q' in request.GET:
+def search(request):
+    if ('q' in request.GET) and request.GET['q'].strip():
         query_string = request.GET["q"]
         entry_query = get_query(query_string, ['title'])
         found_entries = None
         if entry_query:
             found_entries = Auction.objects.filter(entry_query)
-
+            request.session["search_result"] = found_entries
         error = None
 
         if not found_entries is None:
@@ -286,9 +286,24 @@ def search(request, query):
                 error = 'Nothing found in the database'
         else:
             error = 'Nothing found in the database'
-
-        return render_to_response('search_results.html', {'query_string': query_string,
-                                                          'found_entries': found_entries,
-                                                          'error': error}, context_instance=RequestContext(request))
+        request.session["search_error"] = error
+        return HttpResponseRedirect("/results/?page=1")
     else:
         return HttpResponseBadRequest("Bad Request")
+
+
+def search_result_pagination(request):
+    result = request.session["search_result"]
+    paginator = Paginator(result, 10)  # Show 25 contacts per page
+
+    page = request.GET.get('page')
+    try:
+        auctions = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        auctions = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        auctions = paginator.page(paginator.num_pages)
+
+    return render_to_response('search_results.html', {"auctions": auctions}, context_instance=RequestContext(request))
