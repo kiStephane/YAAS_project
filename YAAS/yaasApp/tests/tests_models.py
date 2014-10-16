@@ -32,7 +32,7 @@ class AuctionTestCase(TestCase):
                              timezone.datetime(2014, 10, 5, 16, 15, 32, 905000)))  # 2014-10-05T16:15:32.905Z
 
     def test_default_state_is_active(self):
-        self.assertEqual(self.my_auction.state, 'active')
+        self.assertEqual(self.my_auction.state, 1)
 
 
 class BidTestCase(TestCase):
@@ -48,7 +48,4 @@ class BidTestCase(TestCase):
         self.assertEqual(self.my_bid.auction, Auction.objects.get(id=1), "This bid is on auction 1")
         time = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 7))
         self.assertEqual(self.my_bid.time, time)
-
-    def test_price_must_be_superior_to_auction_minimum_price(self):
-        pass
 

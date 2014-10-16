@@ -8,6 +8,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
+from django.utils.translation import ugettext as _
 
 from yaasApp.forms import *
 from yaasApp.search import get_query
@@ -94,7 +95,7 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            request.session["message_to_home"] = "New User is created. Please Login"
+            request.session["message_to_home"] = _("New User is created. Please Login")
             return HttpResponseRedirect("/home/")
     else:
         form = UserCreationForm()
@@ -140,11 +141,11 @@ def sign_in(request):
             auth.login(request, user)
             return HttpResponseRedirect(next_to)
         else:
-            error = "Wrong username or password ! ! !"
+            error = _("Wrong username or password ! ! !")
             return render_to_response("signin.html", {'error': error}, context_instance=RequestContext(request))
 
     else:
-        error = "Please Sign in"
+        error = _("Please Sign in")
         return render_to_response("signin.html", {'error': error}, context_instance=RequestContext(request))
 
 
@@ -205,10 +206,10 @@ def create_bid(request, a_id):
     auction = Auction.objects.filter(id=a_id)
     if not request.method == 'POST':
         if len(auction) == 0:
-            request.session["error_to_home"] = "The auction you want to bid for does not exist !"
+            request.session["error_to_home"] = _("The auction you want to bid for does not exist !")
             return HttpResponseRedirect('/home/')
         elif auction[0].seller == request.user:
-            request.session["error_to_auction_show"] = "You cannot bid because you are the seller !"
+            request.session["error_to_auction_show"] = _("You cannot bid because you are the seller !")
             return HttpResponseRedirect('/auction/' + str(a_id))
         else:
             form = BidCreationForm({"auction_id": a_id})

@@ -1,5 +1,3 @@
-import re
-
 __author__ = 'stephaneki'
 
 from django.test import TestCase, Client
@@ -11,7 +9,7 @@ class ViewTestCase(TestCase):
         resp = self.client.get("/home/")
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('auctions' in resp.context)
-        self.assertEqual([auction.pk for auction in resp.context['auctions']], [1, 2])
+        self.assertEqual([auction.pk for auction in resp.context['auctions']], [1, 2, 3, 4])
 
     def test_auction_is_well_fetch(self):
         resp = self.client.get("/auction/1")
