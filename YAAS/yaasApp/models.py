@@ -38,7 +38,7 @@ class Auction(models.Model):
             return True
         return False
 
-    def last_bid_price(self):
+    def last_bid(self):
         bids = self.bid_set.all()
         if bids.count() == 0:
             return None
@@ -49,7 +49,21 @@ class Auction(models.Model):
                     last = bid
                 elif last.price < bid.price:
                     last = bid
-        return last.price
+            return last
+
+    def last_bid_price(self):
+        last = self.last_bid()
+        if last:
+            return last.price
+        else:
+            return None
+
+    def last_bidder_username(self):
+        last = self.last_bid()
+        if last:
+            return last.bidder.username
+        else:
+            return None
 
     def minimum_bid_price(self):
         if self.last_bid_price() is None:

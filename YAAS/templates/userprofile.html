@@ -18,18 +18,57 @@
 <h1>Profile of : {{ username }}</h1>
 <h2>Email: {{ user_email }}</h2>
 {% for auction in auctions %}
-    <h3>Auction title: {{ auction.title }}</h3> <br>
+    <h4>Auction title: {{ auction.title }}</h4> <br>
 
-    <label for="id_desc"> Description </label>
-    <textarea id="id_desc" readonly cols="30" rows="10">{{ auction.description }}</textarea> <br>
+    <label for="id_desc"> Description: </label>
+    <textarea id="id_desc" readonly cols="30" rows="5">{{ auction.description }}</textarea> <br>
 
     <a href="/editauction/{{ auction.id }}"> Edit</a>
     <hr>
 {% endfor %}
 
-<a href="/editprofile/"> Edit profile </a> <br>
-<a href="/changepassword/"> Change password </a> <br>
-<a href="/createauction/"> Create new auction </a> <br>
-<a href="/logout/"> Log out </a>
+ <h2> My bids </h2>
+    <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Auction title</th>
+            <th>Seller</th>
+            <th>Deadline</th>
+            <th>Last bid</th>
+            <th>Last bidder</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    {% for bid in bids %}
+    {%  if bid.auction.last_bidder_username != username%}
+        <tr class="danger">
+            <td>{{ bid.id }}</td>
+            <td><a href="/auction/{{ auction.id }}">{{ bid.auction.title }}</a></td>
+            <td>{{ bid.auction.seller.username }}</td>
+            <td>{{ bid.auction.deadline }}</td>
+            <td>{{ bid.auction.last_bid_price }}</td>
+            <td>{{ bid.auction.last_bidder_username }}</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td>{{ bid.id }}</td>
+            <td><a href="/auction/{{ auction.id }}">{{ bid.auction.title }}</a></td>
+            <td>{{ bid.auction.seller.username }}</td>
+            <td>{{ bid.auction.deadline }}</td>
+            <td>{{ bid.auction.last_bid_price }}</td>
+            <td>{{ bid.auction.last_bidder_username }}</td>
+        </tr>
+
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="/editprofile/" type="button" class="btn btn-primary"> Edit profile </a>
+<a href="/changepassword/" type="button" class="btn btn-primary"> Change password </a>
+<a href="/createauction/" type="button" class="btn btn-primary"> Create new auction </a>
+<a href="/logout/" type="button" class="btn btn-primary"> Log out </a> <br>
 
 {% endblock %}

@@ -38,9 +38,7 @@ def create_auction(request):
                                                             'username': request.user.username},
                                       context_instance=RequestContext(request))
         else:
-            # form = AuctionCreationForm()
             return render_to_response('createauction.html', {'form': form,
-                                                             #'error': "Not valid data",
                                                              'username': request.user.username},
                                       context_instance=RequestContext(request))
 
@@ -161,10 +159,12 @@ def show_profile(request):
     else:
         user = request.user
         auctions = user.auction_set.all()
+        bids = user.bid_set.all()
         message = request.session.get("message_to_profile")
         return render_to_response("userprofile.html", {"username": user.username,
                                                        "user_email": user.email,
                                                        "auctions": auctions,
+                                                       "bids": bids,
                                                        "msg": message},
                                   context_instance=RequestContext(request)
         )
@@ -189,9 +189,10 @@ def show_auction(request, a_id):
     if auction.count() == 1:
         error = request.session.get("error_to_auction_show")
         request.session["error_to_auction_show"] = None
+        last = auction[0].last_bid_price()
         return render_to_response("auction.html", {"auction": auction[0],
                                                    'error': error,
-                                                   "last_bid": auction[0].last_bid_price(),
+                                                   "last_bid": last,
                                                    "username": request.user.username},
                                   context_instance=RequestContext(request))
     else:
@@ -215,6 +216,7 @@ def create_bid(request, a_id):
             request.session["number_of_bids"] = len(auction[0].bid_set.all())
             error = request.session.get('error_to_create_bid')
             request.session["error_to_create_bid"] = None
+
             return render_to_response('createbid.html', {'form': form,
                                                          'error': error,
                                                          'username': request.user.username,

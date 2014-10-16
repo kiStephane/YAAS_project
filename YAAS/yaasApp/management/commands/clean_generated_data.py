@@ -9,7 +9,7 @@ from django.core.management import BaseCommand
 class Command(BaseCommand):
     args = '[count]'
 
-    def handle(self, count=20, *args, **options):
+    def handle(self, count=50, *args, **options):
 
         try:
             i = int(count)
