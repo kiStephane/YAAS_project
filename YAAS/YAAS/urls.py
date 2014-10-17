@@ -41,6 +41,8 @@ urlpatterns = patterns('',
 
     url(r'^results/$', search_result_pagination),
 
+    url(r'^selectlang/(?P<lang>\w+)$', select_lang),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

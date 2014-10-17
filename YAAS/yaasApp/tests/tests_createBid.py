@@ -117,7 +117,20 @@ class CreateBidViewTestCase(TestCase):
         self.assertTrue(True)
 
     def test_if_no_last_bidder_then_no_email_sending(self):
-        self.assertTrue(False)
+        self.sign_in_first()
+        self.client.get("/createbid/2")
+        resp = self.client.post("/createbid/2", {"auction_id": 2,
+                                                 "price": 10000})
+        self.assertEqual(resp.status_code, 200)
+        self.client.post("/savebid/", {"option": "Yes"})
+        self.assertEqual(Auction.objects.get(id=2).bid_set.all().count(), 1)
+
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(len(mail.outbox[0].to), 1)
+        self.assertEqual(mail.outbox[0].to[0], Auction.objects.get(id=1).seller.email)
+        self.assertEqual(len(mail.outbox[1].to), 1)
+        self.assertEqual(mail.outbox[1].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
+
 
 
 class ConcurrencyTestCases(TestCase):

@@ -8,6 +8,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
+from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 
@@ -152,8 +153,9 @@ def sign_in(request):
         return render_to_response("signin.html", {'error': error}, context_instance=RequestContext(request))
 
 
+@login_required
 def sign_out(request):
-    logout(request, template_name="index.html")
+    logout(request, next_page="/home/")
     return HttpResponseRedirect("/home/")
 
 
@@ -175,6 +177,7 @@ def show_profile(request):
 
 
 def show_home(request):
+    translation.activate(request.session.get("lang", 'en'))
     auctions = Auction.objects.all()
     error = request.session.get("error_to_home")
     message = request.session.get("message_to_home")
@@ -283,10 +286,11 @@ def send_mail_to_new_bidder(bid):
 
 
 def send_mail_to_last_bid_before_new_one(last_bid_before_new_one, bid):
-    email_body = "Hello, " + last_bid_before_new_one.bidder.username + ".\n Bid exceeded !!!"
-    to_email = last_bid_before_new_one.bidder.email
-    subject = "Your bid has been exceeded. Auction <" + bid.auction.title + ">"
-    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+    if last_bid_before_new_one:
+        email_body = "Hello, " + last_bid_before_new_one.bidder.username + ".\n Bid exceeded !!!"
+        to_email = last_bid_before_new_one.bidder.email
+        subject = "Your bid has been exceeded. Auction <" + bid.auction.title + ">"
+        send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
 
 
 @login_required
@@ -355,3 +359,8 @@ def search_result_pagination(request):
         auctions = paginator.page(paginator.num_pages)
 
     return render_to_response('search_results.html', {"auctions": auctions}, context_instance=RequestContext(request))
+
+
+def select_lang(request, lang):
+    request.session['lang'] = lang
+    return HttpResponseRedirect("/home/")
