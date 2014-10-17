@@ -9,9 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
 from django.utils.translation import ugettext as _
+from django.core.mail import send_mail
 
 from yaasApp.forms import *
 from yaasApp.search import get_query
+
+FROM_EMAIL = "noreply@yaas.com"
 
 
 @login_required
@@ -232,10 +235,15 @@ def create_bid(request, a_id):
 
             if request.session.get("auction_version") == auction[0].version and request.session.get(
                     "number_of_bids") == len(auction[0].bid_set.all()):
-
+                last_bid_before_this_one = auction[0].last_bid()
                 bid = Bid(price=int(cd["price"]), auction=auction[0], bidder=request.user, time=timezone.now())
                 bid.save()
                 message = "New bid has been saved"
+
+                send_mail_to_seller(bid)
+                send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
+                send_mail_to_new_bidder(bid)
+
                 return render_to_response('done.html', {'message': message,
                                                         'username': request.user.username},
                                           context_instance=RequestContext(request))
@@ -260,6 +268,27 @@ def create_bid(request, a_id):
                                       context_instance=RequestContext(request))
 
 
+def send_mail_to_seller(bid):
+    email_body = "Hello, " + bid.auction.seller.username + ".\n Someone bid for your auction"
+    to_email = bid.auction.seller.email
+    subject = "New bid for your auction <" + bid.auction.title + ">"
+    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
+def send_mail_to_new_bidder(bid):
+    email_body = "Hello, " + bid.bidder.username + ".\n Bid created !!!"
+    to_email = bid.auction.last_bid().bidder.email
+    subject = "New bid saved. Auction <" + bid.auction.title + ">"
+    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
+def send_mail_to_last_bid_before_new_one(last_bid_before_new_one, bid):
+    email_body = "Hello, " + last_bid_before_new_one.bidder.username + ".\n Bid exceeded !!!"
+    to_email = last_bid_before_new_one.bidder.email
+    subject = "Your bid has been exceeded. Auction <" + bid.auction.title + ">"
+    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
 @login_required
 def save_bid(request):
     option = request.POST.get('option', '')
@@ -269,10 +298,16 @@ def save_bid(request):
         auction = Auction.objects.get(id=data["auction_id"])
 
         if request.session.get("number_of_bids") == len(auction.bid_set.all()):
+            last_bid_before_this_one = auction.last_bid()
             bid = Bid(auction=auction, bidder=request.user, time=timezone.now(),
                       price=data["price"])
             bid.save()
             message = "New bid registered !!!"
+
+            send_mail_to_seller(bid)
+            send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
+            send_mail_to_new_bidder(bid)
+
             return render_to_response('done.html', {'message': message,
                                                     'username': request.user.username},
                                       context_instance=RequestContext(request))

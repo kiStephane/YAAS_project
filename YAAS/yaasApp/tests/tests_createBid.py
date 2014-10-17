@@ -1,9 +1,10 @@
+from django.core import mail
+
 __author__ = 'stephaneki'
 
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
-import re
 from yaasApp.models import Auction, Bid
 from django.utils import timezone
 
@@ -64,22 +65,59 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'confbid.html')
         auction = Auction.objects.filter(id=2)[0]
-        self.assertFalse(re.search(auction.description, resp.content) is None)
+        self.assertContains(resp, auction.description)
 
     def test_error_if_bidder_try_to_bid_already_winning_auction(self):
         self.assertTrue(False)
 
-    def test_mail_send_to_seller_if_new_bid_registered(self):
-        self.assertTrue(False)
+    def test_email_send_to_seller_if_new_bid_registered(self):
+        self.sign_in_first()
+        self.client.get("/createbid/1")
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 10000})
+        self.assertEqual(resp.status_code, 200)
+        self.client.post("/savebid/", {"option": "Yes"})
+        self.assertEqual(Auction.objects.get(id=1).bid_set.all().count(), 2)
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[0].to), 1)
+        self.assertEqual(mail.outbox[0].to[0], Auction.objects.get(id=1).seller.email)
+        self.assertEqual(mail.outbox[0].subject, 'New bid for your auction <TOYOTA Carina>')
 
     def test_email_sends_to_last_bidder_if_new_bid_registered(self):
-        self.assertTrue(False)
+        self.sign_in_first()
+        bid = Bid.objects.get(id=1)
+        self.client.get("/createbid/1")
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 10000})
+        self.assertEqual(resp.status_code, 200)
+        self.client.post("/savebid/", {"option": "Yes"})
+        self.assertEqual(Auction.objects.get(id=1).bid_set.all().count(), 2)
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[1].to), 1)
+        self.assertEqual(mail.outbox[1].to[0], bid.bidder.email)
+        self.assertEqual(mail.outbox[1].subject, 'Your bid has been exceeded. Auction <TOYOTA Carina>')
 
     def test_email_sends_to_new_bidder_on_bid_create(self):
-        self.assertTrue(False)
+        self.sign_in_first()
+        self.client.get("/createbid/1")
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 10000})
+        self.assertEqual(resp.status_code, 200)
+        self.client.post("/savebid/", {"option": "Yes"})
+        self.assertEqual(Auction.objects.get(id=1).bid_set.all().count(), 2)
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[2].to), 1)
+        self.assertEqual(mail.outbox[2].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
+        self.assertEqual(mail.outbox[2].subject, 'New bid saved. Auction <TOYOTA Carina>')
 
     def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
         self.assertTrue(True)
+
+    def test_if_no_last_bidder_then_no_email_sending(self):
+        self.assertTrue(False)
 
 
 class ConcurrencyTestCases(TestCase):
