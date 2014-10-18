@@ -1,5 +1,5 @@
 {% extends "base2.html" %}
-
+{% load i18n %}
 {% block title %}
     Auction
 {% endblock %}
@@ -15,13 +15,13 @@
         <strong> Error! {{ error }}</strong>
 </div>
 {% endif %}
-    <h2>Title</h2>
+    <h2>{% trans "Title" %}</h2>
     <p>{{ auction.title }}</p>
 
-    <h2>Description</h2>
+    <h2>{% trans "Description" %}</h2>
     <p>{{ auction.description }}</p>
 
-    <h2>State</h2>
+    <h2>{% trans "State" %}</h2>
     <p>{{ auction.state }}</p>
 
     <h2>Deadline</h2>

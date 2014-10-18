@@ -87,9 +87,9 @@ def edit_auction(request, a_id):
                 auction.version += 1
                 auction.save()
         else:
-            request.session["message_to_profile"] = "You cannot edit this auction because you are not the seller"
+            request.session["message_to_profile"] = _("You cannot edit this auction because you are not the seller")
     else:
-        request.session["message_to_profile"] = "This auction does not exists"
+        request.session["message_to_profile"] = _("This auction does not exists")
 
     return HttpResponseRedirect("/profile/")
 
@@ -254,7 +254,7 @@ def create_bid(request, a_id):
             elif request.session.get("auction_version") != auction[0].version:
 
                 form = ConfirmationForm()
-                message = "The auction description has changed"
+                message = _("The auction description has changed")
                 return render_to_response('confbid.html', {'form': form,
                                                            'message': message,
                                                            'auction_id': auction[0].id,
@@ -306,7 +306,7 @@ def save_bid(request):
             bid = Bid(auction=auction, bidder=request.user, time=timezone.now(),
                       price=data["price"])
             bid.save()
-            message = "New bid registered !!!"
+            message = _("New bid registered !!!")
 
             send_mail_to_seller(bid)
             send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
@@ -316,7 +316,7 @@ def save_bid(request):
                                                     'username': request.user.username},
                                       context_instance=RequestContext(request))
         else:
-            request.session['error_to_create_bid'] = "Someone bid before you. Bid again !"
+            request.session['error_to_create_bid'] = _("Someone bid before you. Bid again !")
             return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
     else:
         request.session["error_to_create_bid"] = "Bid has not been saved"
@@ -335,9 +335,9 @@ def search(request):
 
         if not found_entries is None:
             if found_entries.count() == 0:
-                error = 'Nothing found in the database'
+                error = _('Nothing found in the database')
         else:
-            error = 'Nothing found in the database'
+            error = _('Nothing found in the database')
         request.session["search_error"] = error
         return HttpResponseRedirect("/results/?page=1")
     else:
