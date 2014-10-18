@@ -1,11 +1,12 @@
 # Create your views here.
+from django.core import serializers
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib.auth import authenticate
 from django.contrib import auth
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.views import logout
 from django.utils import translation
@@ -178,7 +179,7 @@ def show_profile(request):
 
 def show_home(request):
     translation.activate(request.session.get("lang", 'en'))
-    auctions = Auction.objects.all()
+    auctions = Auction.objects.all().filter(state=1)
     error = request.session.get("error_to_home")
     message = request.session.get("message_to_home")
     request.session["error_to_home"] = None
@@ -361,6 +362,35 @@ def search_result_pagination(request):
     return render_to_response('search_results.html', {"auctions": auctions}, context_instance=RequestContext(request))
 
 
+def api_search(request, a_id):
+    auctions = get_object_or_404(Auction, id=a_id, )
+    try:
+        # xml = serializers.serialize("xml", [blog])
+        # response = HttpResponse(xml, mimetype="application/xml")
+        json = serializers.serialize("json", [auctions])
+        response = HttpResponse(json, mimetype="application/json")
+        response.status_code = 200
+    except (ValueError, TypeError, IndexError):
+        response = HttpResponse()
+        response.status_code = 400
+    return response
+
+
 def select_lang(request, lang):
     request.session['lang'] = lang
     return HttpResponseRedirect("/home/")
+
+
+@permission_required('yaasApp.can_ban', login_url="/signin/")
+def ban_auction(request, a_id):
+    auction = get_object_or_404(Auction, id=a_id)
+    if auction.ban():
+        auction.save()
+        return HttpResponseRedirect('/home/')
+    else:
+        error = "You can only ban active auctions"
+        return render_to_response("auction.html", {"auction": auction,
+                                                   'error': error,
+                                                   "last_bid": auction.last_bid(),
+                                                   "username": request.user.username},
+                                  context_instance=RequestContext(request))

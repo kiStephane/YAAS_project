@@ -31,6 +31,8 @@ urlpatterns = patterns('',
 
     url(r'^editauction/(?P<a_id>\d+)$', edit_auction),
 
+    url(r'^banauction/(?P<a_id>\d+)$', ban_auction),
+
     url(r'^auction/(?P<a_id>\d+)$', show_auction),
 
     url(r'^createbid/(?P<a_id>\d+)$', create_bid),
@@ -39,9 +41,12 @@ urlpatterns = patterns('',
 
     url(r'^search/$', search),
 
+    url(r'^api/search/(\d{1,3})$', api_search),
+
     url(r'^results/$', search_result_pagination),
 
     url(r'^selectlang/(?P<lang>\w+)$', select_lang),
+
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

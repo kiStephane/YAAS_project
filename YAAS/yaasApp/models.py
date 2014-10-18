@@ -32,6 +32,11 @@ class Auction(models.Model):
 
     state = property(get_state, set_state)'''
 
+    class Meta:
+        permissions = (
+            ("can_ban", "Can ban an auction"),
+        )
+
     def ban(self):
         if self.state is 1:
             self.state = 2
@@ -72,7 +77,6 @@ class Auction(models.Model):
         return self.last_bid_price() + MINIMUM_BID_AUGMENTATION
 
     def get_winner(self):
-
         pass
 
 
