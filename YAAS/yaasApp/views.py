@@ -16,6 +16,7 @@ from django.core.mail import send_mail
 from yaasApp.forms import *
 from yaasApp.search import get_query
 
+
 FROM_EMAIL = "noreply@yaas.com"
 
 
@@ -168,6 +169,7 @@ def show_profile(request):
         auctions = user.auction_set.all()
         bids = user.bid_set.all()
         message = request.session.get("message_to_profile")
+        request.session["message_to_profile"] = None
         return render_to_response("userprofile.html", {"username": user.username,
                                                        "user_email": user.email,
                                                        "auctions": auctions,
@@ -237,7 +239,10 @@ def create_bid(request, a_id):
             cd = form.cleaned_data
             request.session['bid_data'] = cd
 
-            if request.session.get("auction_version") == auction[0].version and request.session.get(
+            if auction[0].last_bidder_username() == request.user.username:
+                request.session["message_to_profile"] = "You cannot bid for an already winning auction!"
+                return HttpResponseRedirect("/profile/")
+            elif request.session.get("auction_version") == auction[0].version and request.session.get(
                     "number_of_bids") == len(auction[0].bid_set.all()):
                 last_bid_before_this_one = auction[0].last_bid()
                 bid = Bid(price=int(cd["price"]), auction=auction[0], bidder=request.user, time=timezone.now())
@@ -272,28 +277,6 @@ def create_bid(request, a_id):
                                       context_instance=RequestContext(request))
 
 
-def send_mail_to_seller(bid):
-    email_body = "Hello, " + bid.auction.seller.username + ".\n Someone bid for your auction"
-    to_email = bid.auction.seller.email
-    subject = "New bid for your auction <" + bid.auction.title + ">"
-    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
-
-
-def send_mail_to_new_bidder(bid):
-    email_body = "Hello, " + bid.bidder.username + ".\n Bid created !!!"
-    to_email = bid.auction.last_bid().bidder.email
-    subject = "New bid saved. Auction <" + bid.auction.title + ">"
-    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
-
-
-def send_mail_to_last_bid_before_new_one(last_bid_before_new_one, bid):
-    if last_bid_before_new_one:
-        email_body = "Hello, " + last_bid_before_new_one.bidder.username + ".\n Bid exceeded !!!"
-        to_email = last_bid_before_new_one.bidder.email
-        subject = "Your bid has been exceeded. Auction <" + bid.auction.title + ">"
-        send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
-
-
 @login_required
 def save_bid(request):
     option = request.POST.get('option', '')
@@ -324,14 +307,36 @@ def save_bid(request):
         return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
 
 
+def send_mail_to_seller(bid):
+    email_body = "Hello, " + bid.auction.seller.username + ".\n Someone bid for your auction"
+    to_email = bid.auction.seller.email
+    subject = "New bid for your auction <" + bid.auction.title + ">"
+    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
+def send_mail_to_new_bidder(bid):
+    email_body = "Hello, " + bid.bidder.username + ".\n Bid created !!!"
+    to_email = bid.auction.last_bid().bidder.email
+    subject = "New bid saved. Auction <" + bid.auction.title + ">"
+    send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
+def send_mail_to_last_bid_before_new_one(last_bid_before_new_one, bid):
+    if last_bid_before_new_one:
+        email_body = "Hello, " + last_bid_before_new_one.bidder.username + ".\n Bid exceeded !!!"
+        to_email = last_bid_before_new_one.bidder.email
+        subject = "Your bid has been exceeded. Auction <" + bid.auction.title + ">"
+        send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
+
+
 def search(request):
-    if ('q' in request.GET) and request.GET['q'].strip():
+    if 'q' in request.GET:
         query_string = request.GET["q"]
         entry_query = get_query(query_string, ['title'])
         found_entries = None
         if entry_query:
             found_entries = Auction.objects.filter(entry_query)
-            request.session["search_result"] = found_entries
+            request.session["search_result"] = found_entries[0]
         error = None
 
         if not found_entries is None:

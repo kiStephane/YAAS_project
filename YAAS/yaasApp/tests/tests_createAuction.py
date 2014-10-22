@@ -63,7 +63,7 @@ class CreateAuctionViewTestCase(TestCase):
                                                     "description": "Auction description",
                                                     "creation_date": "10/10/14",
                                                     "deadline": "10/13/14",
-                                                    "minimum_price": 100})
+                                                    "minimum_price": 100.0})
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "confirmation.html", "The data is valid then the user should confirm or not")
 

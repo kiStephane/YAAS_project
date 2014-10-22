@@ -4,5 +4,4 @@ from django.test import TestCase
 
 
 class BanAuctionTestCase(TestCase):
-
     pass

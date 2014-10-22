@@ -43,16 +43,33 @@ class SearchViewTestCase(TestCase):
 
     def test_if_search_query_empty_result_empty(self):
         resp = self.client.get("/search/?q=")
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['error'], "Nothing found in the database")
-        self.assertTemplateUsed(resp, "search_results.html")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp["location"], "http://testserver/results/?page=1")
+        error = self.client.session.get("search_error")
+        self.assertEqual(error, "Nothing found in the database")
 
     def test_if_two_auctions_have_same_name_then_return_both(self):
         resp = self.client.get("/search/?q=Awsome+bike")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], 'http://testserver/results/?page=1')
-        #self.assertFalse(re.search("Stars wars bike 1", resp.content) is None)
-        #self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
+        # self.assertFalse(re.search("Stars wars bike 1", resp.content) is None)
+        # self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
+
+
+class EditAuctionTestCase(TestCase):
+    pass
+
+
+class RegistrationTestCase(TestCase):
+    pass
+
+
+class ChangePasswordTestCase(TestCase):
+    pass
+
+
+class SelectLanguageTestCase(TestCase):
+    pass
 
 
 

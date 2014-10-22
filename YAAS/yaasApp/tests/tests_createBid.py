@@ -18,8 +18,12 @@ class CreateBidViewTestCase(TestCase):
         self.my_user = None
         self.client = None
 
-    def sign_in_first(self):
-        login_successful = self.client.login(username=self.my_user.username, password="1")
+    def sign_in_first(self, username=None, password=None):
+        if username is None or password is None:
+            login_successful = self.client.login(username=self.my_user.username, password="1")
+        else:
+            login_successful = self.client.login(username=username, password=password)
+
         self.assertTrue(login_successful)
         return login_successful
 
@@ -68,10 +72,16 @@ class CreateBidViewTestCase(TestCase):
         self.assertContains(resp, auction.description)
 
     def test_error_if_bidder_try_to_bid_already_winning_auction(self):
-        self.assertTrue(False)
+        self.sign_in_first()
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 7000})
+        self.assertEqual(resp.status_code, 302, "cannot bid for already winning auction")
+        error = self.client.session.get("message_to_profile")
+        self.assertTrue(error == "You cannot bid for an already winning auction!")
+        self.assertRedirects(resp, "/profile/")  # message_to_profile
 
     def test_email_send_to_seller_if_new_bid_registered(self):
-        self.sign_in_first()
+        self.sign_in_first(username="ski2", password="1")
         self.client.get("/createbid/1")
         resp = self.client.post("/createbid/1", {"auction_id": 1,
                                                  "price": 10000})
@@ -85,7 +95,7 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, 'New bid for your auction <TOYOTA Carina>')
 
     def test_email_sends_to_last_bidder_if_new_bid_registered(self):
-        self.sign_in_first()
+        self.sign_in_first(username="ski2", password="1")
         bid = Bid.objects.get(id=1)
         self.client.get("/createbid/1")
         resp = self.client.post("/createbid/1", {"auction_id": 1,
@@ -100,7 +110,7 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[1].subject, 'Your bid has been exceeded. Auction <TOYOTA Carina>')
 
     def test_email_sends_to_new_bidder_on_bid_create(self):
-        self.sign_in_first()
+        self.sign_in_first(username="ski2", password="1")
         self.client.get("/createbid/1")
         resp = self.client.post("/createbid/1", {"auction_id": 1,
                                                  "price": 10000})
@@ -132,22 +142,17 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[1].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
 
 
-
 class ConcurrencyTestCases(TestCase):
     def setUp(self):
-        self.my_user1 = User.objects.get(id=4)
-        self.my_user2 = User.objects.get(id=3)
+        self.my_user1 = User.objects.get(id=3)
         self.client1 = Client()
-        self.client2 = Client()
 
     def tearDown(self):
         self.my_user1 = None
-        self.my_user2 = None
-        self.client2 = None
         self.client1 = None
 
     def sign_in_first(self):
-        login_successful = self.client1.login(username=self.my_user1.username, password="1")
+        login_successful = self.client1.login(username=self.my_user1.username, password="xx")
         self.assertTrue(login_successful)
         return login_successful
 
@@ -158,7 +163,6 @@ class ConcurrencyTestCases(TestCase):
         resp = self.client1.post("/savebid/", {"option": 'Yes'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp["location"], "http://testserver/createbid/1")
-        self.assertRedirects(resp, "/createbid/1")
 
     def test_user_should_see_last_auction_description_in_confirmation_window(self):
         self.sign_in_first()
@@ -170,5 +174,5 @@ class ConcurrencyTestCases(TestCase):
         resp = self.client1.post("/createbid/1", {"auction_id": 1,
                                                   "price": 5000})
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'confbid.html')
+        self.assertTemplateUsed(resp, "confbid.html")
         self.assertContains(resp, "New description")
