@@ -54,8 +54,9 @@ class SearchViewTestCase(TestCase):
         resp = self.client.get("/search/?q=Awsome+bike")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], 'http://testserver/results/?page=1')
-        # self.assertFalse(re.search("Stars wars bike 1", resp.content) is None)
-        # self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
+        self.assertRedirects(resp, '/results/?page=1')
+        #TODO Test that the response contains auctions description
+        #self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
 
 
 class EditAuctionTestCase(TestCase):
@@ -90,7 +91,7 @@ class EditAuctionTestCase(TestCase):
         self.assertEqual(self.client.session.get("message_to_profile"), "This auction does not exists")
         self.assertRedirects(resp, "/profile/")
 
-    def test_ok(self):
+    def test_ok(self): #TODO Rename
         self.sign_in_first()
         resp = self.client.post('/editauction/1', {'description': 'my new description'})
         auction = Auction.objects.get(id=1)
@@ -119,13 +120,42 @@ class RegistrationTestCase(TestCase):
         self.assertRedirects(response, "/home/")
 
     def test_(self):
-        # Need refactoring
+        # TODO Need refactoring
         response = self.client.get('/register/')
         self.assertEqual(response.status_code, 200)
 
 
 class ChangePasswordTestCase(TestCase):
-    pass
+    def setUp(self):
+        self.my_user = User.objects.get(id=3)
+        self.client = Client()
+
+    def tearDown(self):
+        self.my_user = None
+        self.client = None
+
+    def sign_in_first(self):
+        login_successful = self.client.login(username=self.my_user.username, password="xx")
+        self.assertTrue(login_successful)
+        return login_successful
+
+    def test_user_should_login_first(self):
+        # 'old_password', 'new_password1', 'new_password2'
+        resp = self.client.post('/changepassword/', {'old_password': 'xx',
+                                                     'new_password1': 'test',
+                                                     'new_password2': 'test'})
+        self.assertEqual(resp.status_code, 302, "The user is redirected because he is not logged in")
+        self.assertRedirects(resp, "/signin/?next=/changepassword/")
+
+    def test_ok(self):#TODO Rename
+        self.sign_in_first()
+        resp = self.client.post('/changepassword/', {'old_password': 'xx',
+                                                     'new_password1': 'test',
+                                                     'new_password2': 'test'})
+        login_successful = self.client.login(username=self.my_user.username, password="test")
+        self.assertTrue(login_successful)
+        self.assertEqual(resp.status_code, 302)
+        self.assertRedirects(resp, '/profile/')
 
 
 class SelectLanguageTestCase(TestCase):

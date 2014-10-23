@@ -371,20 +371,6 @@ def search_result_pagination(request):
     return render_to_response('search_results.html', {"auctions": auctions}, context_instance=RequestContext(request))
 
 
-def api_search(request, a_id):
-    auctions = get_object_or_404(Auction, id=a_id, )
-    try:
-        # xml = serializers.serialize("xml", [blog])
-        # response = HttpResponse(xml, mimetype="application/xml")
-        json = serializers.serialize("json", [auctions])
-        response = HttpResponse(json, mimetype="application/json")
-        response.status_code = 200
-    except (ValueError, TypeError, IndexError):
-        response = HttpResponse()
-        response.status_code = 400
-    return response
-
-
 def select_lang(request, lang):
     request.session['lang'] = lang
     return HttpResponseRedirect("/home/")
@@ -397,9 +383,8 @@ def ban_auction(request, a_id):
         auction.save()
         return HttpResponseRedirect('/home/')
     else:
-        error = "You can only ban active auctions"
         return render_to_response("auction.html", {"auction": auction,
-                                                   'error': error,
+                                                   'error': "You can only ban active auctions",
                                                    "last_bid": auction.last_bid(),
                                                    "username": request.user.username},
                                   context_instance=RequestContext(request))

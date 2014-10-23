@@ -42,8 +42,6 @@ urlpatterns = patterns('',
 
     url(r'^search/$', search),
 
-    url(r'^api/search/(\d{1,3})$', api_search), #TODO Delete that URL
-
     url(r'^api/v1/search/$', auction_search_api),
 
     url(r'^results/$', search_result_pagination),
