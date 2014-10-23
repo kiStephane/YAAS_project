@@ -1,8 +1,8 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from yaasApp.rest_views import auction_search_api
 
 from yaasApp.views import *
-
 
 admin.autodiscover()
 
@@ -42,7 +42,9 @@ urlpatterns = patterns('',
 
     url(r'^search/$', search),
 
-    url(r'^api/search/(\d{1,3})$', api_search),
+    url(r'^api/search/(\d{1,3})$', api_search), #TODO Delete that URL
+
+    url(r'^api/v1/search/$', auction_search_api),
 
     url(r'^results/$', search_result_pagination),
 

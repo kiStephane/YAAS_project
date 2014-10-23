@@ -1,10 +1,11 @@
 from django.core import serializers
+
 from yaasApp.models import Auction
+
 
 __author__ = 'stephaneki'
 
 from django.test import TestCase
-from django.contrib.auth.models import User
 from django.test.client import Client
 
 

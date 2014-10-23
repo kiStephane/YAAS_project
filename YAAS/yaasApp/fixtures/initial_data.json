@@ -108,6 +108,20 @@
         }
     },
 
+    {"pk": 5,
+        "model": "yaasApp.auction",
+        "fields": {
+            "description": "Stars wars bike 2",
+            "minimum_price": 500,
+            "title": "Awsome bike",
+            "creation_date": "2014-10-05T17:11:11.089Z",
+            "state": 2,
+            "deadline": "2014-10-25T17:10:12Z",
+            "seller": 3,
+            "version": 0
+        }
+    },
+
     {"pk": 1,
         "model": "yaasApp.bid",
         "fields": {

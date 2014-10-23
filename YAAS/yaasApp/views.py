@@ -77,17 +77,21 @@ def save_auction(request):
 
 @login_required
 def edit_auction(request, a_id):
-    auction = Auction.objects.get(id=a_id)
-    if not auction is None:
+    auctions = Auction.objects.filter(id=a_id).filter(state=1)
+    if not auctions.count() is 0:
+        auction = auctions[0]
         if auction.seller == request.user:
-            if request.method != "POST":
+            print request.method
+            if request.method == "GET":
                 return render_to_response('editauction.html', {'auction': auction,
                                                                'username': request.user.username},
                                           context_instance=RequestContext(request))
-            else:
+            elif request.method == "POST":
                 auction.description = request.POST.get("description")
                 auction.version += 1
                 auction.save()
+            else:
+                return HttpResponseBadRequest()
         else:
             request.session["message_to_profile"] = _("You cannot edit this auction because you are not the seller")
     else:
@@ -212,7 +216,7 @@ def show_auction(request, a_id):
 
 @login_required
 def create_bid(request, a_id):
-    auction = Auction.objects.filter(id=a_id)
+    auction = Auction.objects.filter(id=a_id).filter(state=1)
     if not request.method == 'POST':
         if len(auction) == 0:
             request.session["error_to_home"] = _("The auction you want to bid for does not exist !")
@@ -336,7 +340,7 @@ def search(request):
         found_entries = None
         if entry_query:
             found_entries = Auction.objects.filter(entry_query)
-            request.session["search_result"] = found_entries[0]
+            request.session["search_result"] = found_entries
         error = None
 
         if not found_entries is None:
