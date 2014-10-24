@@ -1,8 +1,9 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from yaasApp.rest_views import auction_search_api
 
+from yaasApp.rest_views import auction_search_api, bid_api
 from yaasApp.views import *
+
 
 admin.autodiscover()
 
@@ -43,6 +44,7 @@ urlpatterns = patterns('',
     url(r'^search/$', search),
 
     url(r'^api/v1/search/$', auction_search_api),
+    url(r'^api/v1/createbid/(?P<pk>\d+)$', bid_api),
 
     url(r'^results/$', search_result_pagination),
 
