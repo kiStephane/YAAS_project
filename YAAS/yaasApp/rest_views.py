@@ -1,6 +1,9 @@
+import json
+
 from rest_framework.decorators import authentication_classes, permission_classes, renderer_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 
 __author__ = 'stephaneki'
 from yaasApp.models import Auction
@@ -23,7 +26,7 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-#@csrf_exempt
+# @csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer, ])
 def auction_search_api(request):
@@ -53,14 +56,21 @@ def bid_api(request, pk):
     auction = Auction.objects.filter(id=pk).filter(state=1)
     if auction.count() is 0:
         # An auction with this id does not exist in our database
-        pass
+        return Response({'details': 'The auction you want to bid for does not exist !'}, status=400)
     else:
         if auction[0].seller.username == request.user.username:
             # a seller cannot bid for his own auction
-            return Response([{'details': 'A seller cannot bid for his own auction'}], status=403)
+            return Response({'details': 'A seller cannot bid for his own auction'}, status=403)
         elif auction[0].last_bidder_username() == request.user.username:
             # a bidder cannot bid an already winning auction
-            pass
+            return Response({'details': "Cannot bid for already winning auction"}, status=403)
         else:
-            pass
+            if 'price' in request.POST:
+                price = json.loads(request.POST.get('price'))
+                minimum_price = auction[0].minimum_bid_price()
+                if minimum_price > price:
+                    return Response({'details': "Your bid must be greater than the last bid for this auction",
+                                     'minimum_bid': minimum_price}, status=403)
+            else:
+                pass
 

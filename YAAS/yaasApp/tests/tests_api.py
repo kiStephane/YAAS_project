@@ -1,11 +1,9 @@
 import base64
 
 from rest_framework.renderers import JSONRenderer
-
 from rest_framework.test import APITestCase
 
 from yaasApp.models import Auction
-
 from yaasApp.serializers import AuctionSerializer
 
 
@@ -56,8 +54,12 @@ class SearchApiTestCase(TestCase):
 
 
 class BidApiTestCase(APITestCase):
-    auth_headers = {
+    auth_headers_1 = {
         'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode('ski:1'),
+    }
+
+    auth_headers_2 = {
+        'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode('ski2:1'),
     }
 
     def test_if_not_registered_then_cannot_bid(self):
@@ -65,8 +67,23 @@ class BidApiTestCase(APITestCase):
         self.assertEqual(resp.status_code, 401, "Unauthorized")
 
     def test_seller_cannot_bid_for_his_auction(self):
-        resp = self.client.post("/api/v1/createbid/3", data={}, **self.auth_headers)
+        resp = self.client.post("/api/v1/createbid/3", data={}, **self.auth_headers_1)
         self.assertEqual(resp.status_code, 403)
-        expected = [{'details': 'A seller cannot bid for his own auction'}]
+        expected = {'details': 'A seller cannot bid for his own auction'}
         self.assertJSONEqual(resp.content, expected)
 
+    def test_cannot_bid_for_an_auction_that_does_not_exist(self):
+        resp = self.client.post("/api/v1/createbid/10", **self.auth_headers_1)
+        self.assertEqual(resp.status_code, 400, "Expected BAD REQUEST")
+        self.assertEqual(resp.data, {'details': "The auction you want to bid for does not exist !"})
+
+    def test_error_if_bid_under_last_bid(self):
+        resp = self.client.post("/api/v1/createbid/1", {"price": 3000.0}, **self.auth_headers_2)
+        self.assertEqual(resp.status_code, 403)  # Expected Forbidden
+        self.assertEqual(resp.data, {'details': "Your bid must be greater than the last bid for this auction",
+                                     'minimum_bid': 4000.01})
+
+    def test_error_if_bidder_try_to_bid_already_winning_auction(self):
+        resp = self.client.post("/api/v1/createbid/1", {"auction_id": 1, "price": 7000}, **self.auth_headers_1)
+        self.assertEqual(resp.status_code, 403, "Cannot bid for already winning auction")
+        self.assertEqual(resp.data, {'details': "Cannot bid for already winning auction"})

@@ -24,18 +24,13 @@ class Auction(models.Model):
     state = models.IntegerField(max_length=10, default=1)
     version = models.IntegerField(default=0)
 
-    '''def get_state(self):
-        return self._state
-
-    def set_state(self, state):
-        self._state = state
-
-    state = property(get_state, set_state)'''
-
     class Meta:
         permissions = (
             ("can_ban", "Can ban an auction"),
         )
+
+    def is_due(self):
+        return timezone.now() > self.deadline
 
     def ban(self):
         if self.state is 1:

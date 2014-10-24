@@ -1,7 +1,6 @@
 # Create your views here.
-from django.core import serializers
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.contrib.auth import authenticate
@@ -246,6 +245,11 @@ def create_bid(request, a_id):
             if auction[0].last_bidder_username() == request.user.username:
                 request.session["message_to_profile"] = "You cannot bid for an already winning auction!"
                 return HttpResponseRedirect("/profile/")
+            elif auction[0].is_due:
+                request.session["error_to_auction_show"] = "This auction is due"
+                return HttpResponseRedirect("/auction/" + str(auction[0].id) + "/")
+                pass
+
             elif request.session.get("auction_version") == auction[0].version and request.session.get(
                     "number_of_bids") == len(auction[0].bid_set.all()):
                 last_bid_before_this_one = auction[0].last_bid()
