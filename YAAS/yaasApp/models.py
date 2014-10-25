@@ -12,7 +12,7 @@ class Auction(models.Model):
     state_label = {
         1: 'active',
         2: 'ban',
-        3: 'due',
+        #3: 'due',
         4: 'adjudicated'
     }
     title = models.CharField(max_length=30)
@@ -26,7 +26,7 @@ class Auction(models.Model):
 
     class Meta:
         permissions = (
-            ("can_ban", "Can ban an auction"),
+            ("can_ban", "Can ban auction"),
         )
 
     def is_due(self):

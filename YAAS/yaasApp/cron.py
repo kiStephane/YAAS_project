@@ -1,4 +1,5 @@
 from yaasApp.models import Auction
+from yaasApp.views import send_mail_to_seller, send_mail_to_bidder
 
 __author__ = 'stephaneki'
 
@@ -17,3 +18,10 @@ class CronJob(CronJobBase):
         for auction in auctions:
             if auction.is_due():
                 auction.state = 4  # adjudicated
+                auction.save()
+                send_mail_to_seller(auction.last_bid(),
+                                    sub="Your auction has been resolved",
+                                    body="Auction: " + str(auction.title) + " has been resolved")
+                for bid in auction.bid_set.all():
+                    send_mail_to_bidder(bid, sub="Auction " + str(bid.auction.title) + " resolved !!!",
+                                        body="The auction you have bid for has been resolved")

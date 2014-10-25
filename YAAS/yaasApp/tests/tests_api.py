@@ -2,10 +2,10 @@ import base64
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase
+from django.core import mail
 
 from yaasApp.models import Auction
 from yaasApp.serializers import AuctionSerializer
-
 
 __author__ = 'stephaneki'
 
@@ -39,7 +39,7 @@ class SearchApiTestCase(TestCase):
                         'creation_date': '2014-10-05T17:11:11.089Z',
                         'state': 1,
                         'deadline': '2014-10-25T17:10:12Z',
-                        'seller': 3,
+                        'seller': 'xx',
                         'id': 2
                     }]
 
@@ -84,6 +84,52 @@ class BidApiTestCase(APITestCase):
                                      'minimum_bid': 4000.01})
 
     def test_error_if_bidder_try_to_bid_already_winning_auction(self):
-        resp = self.client.post("/api/v1/createbid/1", {"auction_id": 1, "price": 7000}, **self.auth_headers_1)
+        resp = self.client.post("/api/v1/createbid/1", {"price": 7000}, **self.auth_headers_1)
         self.assertEqual(resp.status_code, 403, "Cannot bid for already winning auction")
         self.assertEqual(resp.data, {'details': "Cannot bid for already winning auction"})
+
+    def test_request_body_should_contain_price(self):
+        resp = self.client.post("/api/v1/createbid/1", {}, **self.auth_headers_2)
+        self.assertEqual(resp.status_code, 400)  # Bad request
+        self.assertEqual(resp.data, {'details': 'You should use the key word price to precise the price'})
+
+    def test_if_request_ok_return_bid_information(self):
+        resp = self.bid_for_auction(self.auth_headers_2, 1, 7000)
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertIn('id', resp.data)
+        self.assertEqual(resp.data["id"], 2)
+
+        self.assertIn('auction', resp.data)
+        self.assertEqual(resp.data["auction"], "TOYOTA Carina")
+
+        self.assertIn('price', resp.data)
+        self.assertEqual(resp.data["price"], 7000)
+
+        self.assertIn('time', resp.data)
+
+    def bid_for_auction(self, auth, auction_id, price):
+        return self.client.post("/api/v1/createbid/" + str(auction_id), {"price": price}, **auth)
+
+    def test_email_send_to_seller_if_new_bid_registered(self):
+        self.bid_for_auction(self.auth_headers_2, 1, 7000)
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[0].to), 1)
+        self.assertEqual(mail.outbox[0].to[0], Auction.objects.get(id=1).seller.email)
+        self.assertEqual(mail.outbox[0].subject, 'New bid for your auction <TOYOTA Carina>')
+
+    def test_email_sends_to_last_bidder_if_new_bid_registered(self):
+        self.bid_for_auction(self.auth_headers_2, 1, 7000)
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[1].to), 1)
+        self.assertEqual(mail.outbox[1].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
+        self.assertEqual(mail.outbox[1].subject, 'Your bid has been exceeded. Auction <TOYOTA Carina>')
+
+    def test_email_sends_to_new_bidder_on_bid_create(self):
+        self.bid_for_auction(self.auth_headers_2, 1, 7000)
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox[2].to), 1)
+        self.assertEqual(mail.outbox[2].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
+        self.assertEqual(mail.outbox[2].subject, 'New bid saved. Auction <TOYOTA Carina>')

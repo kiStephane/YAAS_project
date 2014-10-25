@@ -1,4 +1,6 @@
 from django.core import mail
+import mock
+import pytz
 
 __author__ = 'stephaneki'
 
@@ -80,12 +82,15 @@ class CreateBidViewTestCase(TestCase):
         self.assertTrue(error == "You cannot bid for an already winning auction!")
         self.assertRedirects(resp, "/profile/")  # message_to_profile
 
-    def test_email_send_to_seller_if_new_bid_registered(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_email_send_to_seller_if_new_bid_registered(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.sign_in_first(username="ski2", password="1")
         self.client.get("/createbid/1")
         resp = self.client.post("/createbid/1", {"auction_id": 1,
                                                  "price": 10000})
         self.assertEqual(resp.status_code, 200)
+
         self.client.post("/savebid/", {"option": "Yes"})
         self.assertEqual(Auction.objects.get(id=1).bid_set.all().count(), 2)
 
@@ -94,7 +99,10 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to[0], Auction.objects.get(id=1).seller.email)
         self.assertEqual(mail.outbox[0].subject, 'New bid for your auction <TOYOTA Carina>')
 
-    def test_email_sends_to_last_bidder_if_new_bid_registered(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_email_sends_to_last_bidder_if_new_bid_registered(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
+        #print timezone.now()
         self.sign_in_first(username="ski2", password="1")
         bid = Bid.objects.get(id=1)
         self.client.get("/createbid/1")
@@ -109,7 +117,9 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[1].to[0], bid.bidder.email)
         self.assertEqual(mail.outbox[1].subject, 'Your bid has been exceeded. Auction <TOYOTA Carina>')
 
-    def test_email_sends_to_new_bidder_on_bid_create(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_email_sends_to_new_bidder_on_bid_create(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.sign_in_first(username="ski2", password="1")
         self.client.get("/createbid/1")
         resp = self.client.post("/createbid/1", {"auction_id": 1,
@@ -144,27 +154,30 @@ class CreateBidViewTestCase(TestCase):
 
 class ConcurrencyTestCases(TestCase):
     def setUp(self):
-        self.my_user1 = User.objects.get(id=3)
+        self.my_user = User.objects.get(id=3)
         self.client1 = Client()
 
     def tearDown(self):
-        self.my_user1 = None
+        self.my_user = None
         self.client1 = None
 
     def sign_in_first(self):
-        login_successful = self.client1.login(username=self.my_user1.username, password="xx")
-        self.assertTrue(login_successful)
-        return login_successful
+        return self.client1.login(username=self.my_user.username, password="xx")
 
-    def test_user_should_bid_again_if_new_bid_before_his_bid_during_confirmation(self):
+
+    @mock.patch('django.utils.timezone.now')
+    def test_user_should_bid_again_if_new_bid_before_his_bid_during_confirmation(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.test_user_should_see_last_auction_description_in_confirmation_window()
-        bid = Bid(price=5000, auction=Auction.objects.get(id=1), bidder=self.my_user1, time=timezone.now())
+        bid = Bid(price=5000, auction=Auction.objects.get(id=1), bidder=self.my_user, time=timezone.now())
         bid.save()
         resp = self.client1.post("/savebid/", {"option": 'Yes'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp["location"], "http://testserver/createbid/1")
 
-    def test_user_should_see_last_auction_description_in_confirmation_window(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_user_should_see_last_auction_description_in_confirmation_window(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.sign_in_first()
         self.client1.get("/createbid/1")
         auction = Auction.objects.get(id=1)

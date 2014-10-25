@@ -129,13 +129,13 @@ def change_password(request):
 @login_required
 def edit_profile(request):
     if request.POST:
-        user_form = EditProfileForm(request.POST, instance=request.user)
-        if user_form.is_valid():
-            user_form.save()
+        form = EditProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
             return HttpResponseRedirect('/profile/')
     else:
-        user_form = EditProfileForm()
-    return render_to_response('editprofile.html', {'form': user_form,
+        form = EditProfileForm()
+    return render_to_response('editprofile.html', {'form': form,
                                                    'username': request.user.username},
                               context_instance=RequestContext(request))
 
@@ -200,17 +200,20 @@ def show_home(request):
 def show_auction(request, a_id):
     auction = Auction.objects.filter(id=a_id)
     if auction.count() == 1:
-        error = request.session.get("error_to_auction_show")
-        request.session["error_to_auction_show"] = None
-        last = auction[0].last_bid_price()
-        return render_to_response("auction.html", {"auction": auction[0],
-                                                   'error': error,
-                                                   "last_bid": last,
-                                                   "username": request.user.username},
-                                  context_instance=RequestContext(request))
+        if auction[0].state == 1:
+            error = request.session.get("error_to_auction_show")
+            request.session["error_to_auction_show"] = None
+            last = auction[0].last_bid_price()
+            return render_to_response("auction.html", {"auction": auction[0],
+                                                       'error': error,
+                                                       "last_bid": last,
+                                                       "username": request.user.username},
+                                      context_instance=RequestContext(request))
+        else:
+            request.session["error_to_home"] = "Cannot access this auction: BANNED"
     else:
         request.session["error_to_home"] = "Auction (id=" + str(a_id) + ") does not exist !"
-        return HttpResponseRedirect("/home/")
+    return HttpResponseRedirect("/home/")
 
 
 @login_required
@@ -245,10 +248,9 @@ def create_bid(request, a_id):
             if auction[0].last_bidder_username() == request.user.username:
                 request.session["message_to_profile"] = "You cannot bid for an already winning auction!"
                 return HttpResponseRedirect("/profile/")
-            elif auction[0].is_due:
+            elif auction[0].is_due():  # TODO remove comment
                 request.session["error_to_auction_show"] = "This auction is due"
                 return HttpResponseRedirect("/auction/" + str(auction[0].id) + "/")
-                pass
 
             elif request.session.get("auction_version") == auction[0].version and request.session.get(
                     "number_of_bids") == len(auction[0].bid_set.all()):
@@ -259,7 +261,7 @@ def create_bid(request, a_id):
 
                 send_mail_to_seller(bid)
                 send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
-                send_mail_to_new_bidder(bid)
+                send_mail_to_bidder(bid)
 
                 return render_to_response('done.html', {'message': message,
                                                         'username': request.user.username},
@@ -302,7 +304,7 @@ def save_bid(request):
 
             send_mail_to_seller(bid)
             send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
-            send_mail_to_new_bidder(bid)
+            send_mail_to_bidder(bid)
 
             return render_to_response('done.html', {'message': message,
                                                     'username': request.user.username},
@@ -315,17 +317,30 @@ def save_bid(request):
         return HttpResponseRedirect("/createbid/" + str(data["auction_id"]))
 
 
-def send_mail_to_seller(bid):
-    email_body = "Hello, " + bid.auction.seller.username + ".\n Someone bid for your auction"
+def send_mail_to_seller(bid, sub=None, body=None):
+    if not body:
+        email_body = "Hello, " + bid.auction.seller.username + ".\n Someone bid for your auction"
+    else:
+        email_body = body
     to_email = bid.auction.seller.email
-    subject = "New bid for your auction <" + bid.auction.title + ">"
+    if not sub:
+        subject = "New bid for your auction <" + bid.auction.title + ">"
+    else:
+        subject = sub
     send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
 
 
-def send_mail_to_new_bidder(bid):
-    email_body = "Hello, " + bid.bidder.username + ".\n Bid created !!!"
+def send_mail_to_bidder(bid, sub=None, body=None):
+    if not body:
+        email_body = "Hello, " + bid.bidder.username + ".\n Bid created !!!"
+    else:
+        email_body = body
+
     to_email = bid.auction.last_bid().bidder.email
-    subject = "New bid saved. Auction <" + bid.auction.title + ">"
+    if not sub:
+        subject = "New bid saved. Auction <" + bid.auction.title + ">"
+    else:
+        subject = sub
     send_mail(subject, email_body, FROM_EMAIL, [to_email], fail_silently=False)
 
 
@@ -360,7 +375,7 @@ def search(request):
 
 def search_result_pagination(request):
     result = request.session["search_result"]
-    paginator = Paginator(result, 10)  # Show 25 contacts per page
+    paginator = Paginator(result, 10)  # Show 10 per page
 
     page = request.GET.get('page')
     try:
@@ -385,6 +400,11 @@ def ban_auction(request, a_id):
     auction = get_object_or_404(Auction, id=a_id)
     if auction.ban():
         auction.save()
+        send_mail_to_seller(auction.last_bid(), sub="Your auction <" + auction.title + "> has been banned")
+        for bid in auction.bid_set.all():
+            sub = 'Auction <' + bid.auction.title + '> has been banned'
+            send_mail_to_bidder(bid, sub=sub, body="")
+
         return HttpResponseRedirect('/home/')
     else:
         return render_to_response("auction.html", {"auction": auction,

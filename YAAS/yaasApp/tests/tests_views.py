@@ -19,6 +19,44 @@ class ViewTestCase(TestCase):
         self.assertTrue('auction' in resp.context)
         self.assertEqual(resp.context['auction'].pk, 1)
 
+    def test_only_active_auction_can_be_displayed(self):
+        client = Client()
+        resp = client.get("/auction/5")
+        self.assertEqual(client.session.get('error_to_home'), "Cannot access this auction: BANNED")
+        self.assertRedirects(resp, '/home/')
+
+    def test_if_auction_does_not_exist_redirect_user_to_home(self):
+        resp = self.client.get("/auction/22")
+        message = "Auction (id=" + str(22) + ") does not exist !"
+        self.assertEqual(self.client.session.get('error_to_home'), message)
+        self.assertRedirects(resp, '/home/')
+
+
+class EditProfileTestCase(TestCase):
+    def setUp(self):
+        self.my_user = User.objects.get(id=3)
+        self.client = Client()
+
+    def tearDown(self):
+        self.my_user = None
+        self.client = None
+
+    def sign_in_first(self):
+        return self.client.login(username=self.my_user.username, password="xx")
+
+    def test_user_redirected_to_profile_if_email_valid(self):
+        self.sign_in_first()
+        resp = self.client.post("/editprofile/", {'email': 'ski@test.fi'})
+        self.assertEqual(User.objects.get(id=3).email, 'ski@test.fi')
+        self.assertRedirects(resp, '/profile/')
+
+    def test_error_redirected_to_edit_if_email_invalid(self):
+        self.sign_in_first()
+        resp = self.client.post("/editprofile/", {'email': 'skitest.fi'})
+        self.assertNotEqual(User.objects.get(id=3).email, 'skitest.fi')
+        self.assertFormError(resp, 'form', 'email', "Enter a valid email address.")
+        self.assertTemplateUsed(resp, 'editprofile.html')
+
 
 class SignInViewTestCase(TestCase):
     def test_sign_in_form_is_reachable(self):
@@ -55,8 +93,8 @@ class SearchViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['location'], 'http://testserver/results/?page=1')
         self.assertRedirects(resp, '/results/?page=1')
-        #TODO Test that the response contains auctions description
-        #self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
+        # TODO Test that the response contains auctions description
+        # self.assertFalse(re.search("Stars wars bike 2", resp.content) is None)
 
 
 class EditAuctionTestCase(TestCase):
@@ -91,7 +129,7 @@ class EditAuctionTestCase(TestCase):
         self.assertEqual(self.client.session.get("message_to_profile"), "This auction does not exists")
         self.assertRedirects(resp, "/profile/")
 
-    def test_ok(self): #TODO Rename
+    def test_if_auction_edited_user_redirected_to_profile(self):
         self.sign_in_first()
         resp = self.client.post('/editauction/1', {'description': 'my new description'})
         auction = Auction.objects.get(id=1)
@@ -147,7 +185,7 @@ class ChangePasswordTestCase(TestCase):
         self.assertEqual(resp.status_code, 302, "The user is redirected because he is not logged in")
         self.assertRedirects(resp, "/signin/?next=/changepassword/")
 
-    def test_ok(self):#TODO Rename
+    def test_if_password_changed_user_redirected_to_profile(self):
         self.sign_in_first()
         resp = self.client.post('/changepassword/', {'old_password': 'xx',
                                                      'new_password1': 'test',

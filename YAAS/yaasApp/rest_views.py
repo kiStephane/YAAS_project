@@ -1,14 +1,17 @@
 import json
 
+from django.utils import timezone
 from rest_framework.decorators import authentication_classes, permission_classes, renderer_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from yaasApp.views import send_mail_to_seller, send_mail_to_last_bid_before_new_one, send_mail_to_bidder
+
 
 __author__ = 'stephaneki'
-from yaasApp.models import Auction
+from yaasApp.models import Auction, Bid
 from yaasApp.search import get_query
-from yaasApp.serializers import AuctionSerializer
+from yaasApp.serializers import AuctionSerializer, BidSerializer
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
@@ -26,7 +29,6 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-# @csrf_exempt
 @api_view(['GET'])
 @renderer_classes([JSONRenderer, ])
 def auction_search_api(request):
@@ -56,21 +58,31 @@ def bid_api(request, pk):
     auction = Auction.objects.filter(id=pk).filter(state=1)
     if auction.count() is 0:
         # An auction with this id does not exist in our database
-        return Response({'details': 'The auction you want to bid for does not exist !'}, status=400)
+        response = Response({'details': 'The auction you want to bid for does not exist !'}, status=400)
     else:
         if auction[0].seller.username == request.user.username:
             # a seller cannot bid for his own auction
-            return Response({'details': 'A seller cannot bid for his own auction'}, status=403)
+            response = Response({'details': 'A seller cannot bid for his own auction'}, status=403)
         elif auction[0].last_bidder_username() == request.user.username:
             # a bidder cannot bid an already winning auction
-            return Response({'details': "Cannot bid for already winning auction"}, status=403)
+            response = Response({'details': "Cannot bid for already winning auction"}, status=403)
         else:
             if 'price' in request.POST:
                 price = json.loads(request.POST.get('price'))
                 minimum_price = auction[0].minimum_bid_price()
                 if minimum_price > price:
-                    return Response({'details': "Your bid must be greater than the last bid for this auction",
-                                     'minimum_bid': minimum_price}, status=403)
-            else:
-                pass
+                    response = Response({'details': "Your bid must be greater than the last bid for this auction",
+                                         'minimum_bid': minimum_price}, status=403)
+                else:
+                    last_bid_before_this_one = auction[0].last_bid()
+                    bid = Bid(price=price, auction=auction[0], time=timezone.now(), bidder=request.user)
+                    bid.save()
+                    send_mail_to_seller(bid)
+                    send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
+                    send_mail_to_bidder(bid)
 
+                    response = Response(BidSerializer(bid, many=False).data, status=200)
+            else:
+                response = Response({'details': 'You should use the key word price to precise the price'}, status=400)
+
+    return response

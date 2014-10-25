@@ -1,4 +1,20 @@
 [
+    {"pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "superuser",
+            "first_name": "I can ban auction",
+            "last_name": "Administrator",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": false,
+            "last_login": "2014-10-05T17:13:59.408Z",
+            "groups": [],
+            "user_permissions": [28],
+            "password": "pbkdf2_sha256$10000$2Kw7WbZyir8E$0vOBN10GQnBIvh5218rHC+L/6uojzj9yOdLDz4dF+fg=",
+            "email": "",
+            "date_joined": "2014-10-05T17:10:26.304Z"}
+    },
 
     {"pk": 3,
         "model": "auth.user",
@@ -60,7 +76,7 @@
             "title": "TOYOTA Carina",
             "creation_date": "2014-10-05T16:15:32.905Z",
             "state": 1,
-            "deadline": "2014-10-25T17:10:12Z",
+            "deadline": "2014-10-24T17:10:12Z",
             "seller": 3,
             "version": 1
         }
@@ -117,6 +133,20 @@
             "creation_date": "2014-10-05T17:11:11.089Z",
             "state": 2,
             "deadline": "2014-10-25T17:10:12Z",
+            "seller": 3,
+            "version": 0
+        }
+    },
+
+    {"pk": 6,
+        "model": "yaasApp.auction",
+        "fields": {
+            "description": "Helmet of the future",
+            "minimum_price": 500,
+            "title": "Helmet 2.0",
+            "creation_date": "2014-10-05T17:11:11.089Z",
+            "state": 4,
+            "deadline": "2014-10-15T17:10:12Z",
             "seller": 3,
             "version": 0
         }
