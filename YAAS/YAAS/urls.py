@@ -48,7 +48,7 @@ urlpatterns = patterns('',
 
     url(r'^results/$', search_result_pagination),
 
-    url(r'^selectlang/(?P<lang>\w+)$', select_lang),
+    url(r'^selectlang/(?P<lang>\w{2})$', select_lang),
 
 
     # Uncomment the admin/doc line below to enable admin documentation:

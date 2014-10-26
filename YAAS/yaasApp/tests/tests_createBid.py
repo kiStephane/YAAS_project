@@ -64,7 +64,9 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.context['error'] == "Not valid data")
 
-    def test_bid_confirmation_should_contain_auction_description(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_bid_confirmation_should_contain_auction_description(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.sign_in_first()
         resp = self.client.post("/createbid/2", {"auction_id": 2,
                                                  "price": 5000})
@@ -136,7 +138,9 @@ class CreateBidViewTestCase(TestCase):
     def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
         self.assertTrue(True)
 
-    def test_if_no_last_bidder_then_no_email_sending(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_if_no_last_bidder_then_no_email_sending(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
         self.sign_in_first()
         self.client.get("/createbid/2")
         resp = self.client.post("/createbid/2", {"auction_id": 2,

@@ -32,7 +32,7 @@ msgstr ""
 
 #: yaasApp/views.py:144
 msgid "Wrong username or password ! ! !"
-msgstr "Erreur dans le nom d'utilisateur ou le mot de pass"
+msgstr ""
 
 #: yaasApp/views.py:148
 msgid "Please Sign in"

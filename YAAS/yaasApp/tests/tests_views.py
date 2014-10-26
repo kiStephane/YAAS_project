@@ -99,7 +99,6 @@ class SearchViewTestCase(TestCase):
 
 class EditAuctionTestCase(TestCase):
     def setUp(self):
-        self.my_user = User.objects.get(id=3)
         self.client = Client()
 
     def tearDown(self):
@@ -107,9 +106,7 @@ class EditAuctionTestCase(TestCase):
         self.client = None
 
     def sign_in_first(self):
-        login_successful = self.client.login(username=self.my_user.username, password="xx")
-        self.assertTrue(login_successful)
-        return login_successful
+        return self.client.login(username="xx", password="xx")
 
     def test_seller_should_login_first(self):
         resp = self.client.post('/editauction/1', {'description': 'my new description'})
@@ -173,9 +170,7 @@ class ChangePasswordTestCase(TestCase):
         self.client = None
 
     def sign_in_first(self):
-        login_successful = self.client.login(username=self.my_user.username, password="xx")
-        self.assertTrue(login_successful)
-        return login_successful
+        return self.client.login(username=self.my_user.username, password="xx")
 
     def test_user_should_login_first(self):
         # 'old_password', 'new_password1', 'new_password2'
@@ -197,7 +192,18 @@ class ChangePasswordTestCase(TestCase):
 
 
 class SelectLanguageTestCase(TestCase):
-    pass
+
+    def test_language_selecting(self):
+        login_successful = self.client.login(username="xx", password="xx")
+        self.assertTrue(login_successful)
+        self.assertEqual(self.client.session.get('lang'), None)
+        resp = self.client.get('/selectlang/fr')
+        self.assertEqual(self.client.session.get('lang'), 'fr')
+        self.assertRedirects(resp, '/home/')
+        self.assertContains(self.client.get('/home/'), 'Titre')
+        resp = self.client.get('/selectlang/en')
+
+
 
 
 
