@@ -47,6 +47,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/createbid/(?P<pk>\d+)$', bid_api),
 
     url(r'^results/$', search_result_pagination),
+    url(r'^browse/$', browse_result_pagination),
 
     url(r'^selectlang/(?P<lang>\w{2})$', select_lang),
 

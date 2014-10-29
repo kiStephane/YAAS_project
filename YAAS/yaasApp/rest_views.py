@@ -1,32 +1,17 @@
+__author__ = 'stephaneki'
 import json
 
 from django.utils import timezone
 from rest_framework.decorators import authentication_classes, permission_classes, renderer_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from yaasApp.views import send_mail_to_seller, send_mail_to_last_bid_before_new_one, send_mail_to_bidder
-
-
-__author__ = 'stephaneki'
-from yaasApp.models import Auction, Bid
-from yaasApp.search import get_query
-from yaasApp.serializers import AuctionSerializer, BidSerializer
-
-from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 from rest_framework.authentication import *
 
-
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+from yaasApp.views import send_mail_to_seller, send_mail_to_last_bid_before_new_one, send_mail_to_bidder
+from yaasApp.models import Auction, Bid
+from yaasApp.search import get_query
+from yaasApp.serializers import AuctionSerializer, BidSerializer
 
 
 @api_view(['GET'])

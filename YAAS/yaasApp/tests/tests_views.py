@@ -96,8 +96,7 @@ class SearchViewTestCase(TestCase):
         resp = self.client.get("/search/?q=")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp["location"], "http://testserver/results/?page=1")
-        error = self.client.session.get("search_error")
-        self.assertEqual(error, "Nothing found in the database")
+        self.assertEqual(self.client.session.get("search_error"), "Nothing found in the database")
 
     def test_if_two_auctions_have_same_name_then_return_both(self):
         resp = self.client.get("/search/?q=Awsome+bike")

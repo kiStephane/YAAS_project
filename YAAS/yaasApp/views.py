@@ -22,8 +22,7 @@ FROM_EMAIL = "noreply@yaas.com"
 @login_required
 def create_auction(request):
     if not request.method == 'POST':
-        form = AuctionCreationForm()
-        return render_to_response('createauction.html', {'form': form,
+        return render_to_response('createauction.html', {'form': AuctionCreationForm(),
                                                          'username': request.user.username},
                                   context_instance=RequestContext(request))
     else:
@@ -35,8 +34,7 @@ def create_auction(request):
             auction_min_price = cd['minimum_price']
             auction_deadline = cd['deadline']
             request.session['auction_data'] = cd
-            form = ConfirmationForm()
-            return render_to_response('confirmation.html', {'form': form,
+            return render_to_response('confirmation.html', {'form': ConfirmationForm(),
                                                             'auction_title': auction_title,
                                                             'auction_desc': auction_desc,
                                                             'auction_min_price': auction_min_price,
@@ -61,17 +59,15 @@ def save_auction(request):
                           minimum_price=data["minimum_price"],
                           seller=request.user)
         auction.save()
-        message = "New auction has been saved"
-        send_mail("New auction <"+data['title']+"> created", "Your new auction <"+data['title']+"> has been created",
+        send_mail("New auction <" + data['title'] + "> created",
+                  "Your new auction <" + data['title'] + "> has been created",
                   FROM_EMAIL, [request.user.email], fail_silently=False)
-        return render_to_response('done.html', {'message': message,
+        return render_to_response('done.html', {'message': "New auction has been saved",
                                                 'username': request.user.username},
                                   context_instance=RequestContext(request))
     else:
-        error = "Auction has not been saved"
-        form = AuctionCreationForm()
-        return render_to_response('createauction.html', {'form': form,
-                                                         'error': error,
+        return render_to_response('createauction.html', {'form': AuctionCreationForm(),
+                                                         'error': "Auction has not been saved",
                                                          'username': request.user.username},
                                   context_instance=RequestContext(request))
 
@@ -199,6 +195,24 @@ def show_home(request):
     )
 
 
+def browse_result_pagination(request):
+    translation.activate(request.session.get("lang", 'en'))
+    result = Auction.objects.all().filter(state=1)
+    paginator = Paginator(result, 10)  # Show 10 per page
+
+    page = request.GET.get('page')
+    try:
+        auctions = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        auctions = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        auctions = paginator.page(paginator.num_pages)
+
+    return render_to_response('browse_results.html', {"auctions": auctions}, context_instance=RequestContext(request))
+
+
 def show_auction(request, a_id):
     auction = Auction.objects.filter(id=a_id)
     if auction.count() == 1:
@@ -281,8 +295,7 @@ def create_bid(request, a_id):
                                                            'username': request.user.username},
                                           context_instance=RequestContext(request))
         else:
-            form = BidCreationForm()
-            return render_to_response('createbid.html', {'form': form,
+            return render_to_response('createbid.html', {'form': BidCreationForm(),
                                                          'error': "Not valid data",
                                                          'last_bid_price': auction[0].last_bid_price(),
                                                          'username': request.user.username},
@@ -376,7 +389,7 @@ def search(request):
 
 
 def search_result_pagination(request):
-    result = request.session["search_result"]
+    result = request.session.get("search_result")
     paginator = Paginator(result, 10)  # Show 10 per page
 
     page = request.GET.get('page')

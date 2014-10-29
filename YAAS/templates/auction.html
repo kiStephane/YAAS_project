@@ -22,7 +22,7 @@
     <p>{{ auction.description }}</p>
 
     <h2>{% trans "State" %}</h2>
-    <p>{{ auction.state }}</p>
+    <p>{{ auction.get_state_label }}</p>
 
     <h2>Deadline</h2>
     <p>{{ auction.deadline }}</p>

@@ -46,6 +46,7 @@
             <td>{{ auction.deadline }}</td>
             <td>{{ auction.minimum_price }}</td>
             <td>{{ auction.last_bid.price }}</td>
+            <td>{{ auction.get_state_label }}</td>
         </tr>
     {% endfor %}
     </tbody>

@@ -29,6 +29,9 @@ class Auction(models.Model):
             ("can_ban", "Can ban auction"),
         )
 
+    def get_state_label(self):
+        return self.state_label[self.state]
+
     def is_due(self):
         return timezone.now() > self.deadline
 
@@ -70,9 +73,6 @@ class Auction(models.Model):
             return self.minimum_price + MINIMUM_BID_AUGMENTATION
 
         return self.last_bid_price() + MINIMUM_BID_AUGMENTATION
-
-    def get_winner(self):
-        pass
 
 
 class Bid(models.Model):
