@@ -62,6 +62,8 @@ def save_auction(request):
                           seller=request.user)
         auction.save()
         message = "New auction has been saved"
+        send_mail("New auction <"+data['title']+"> created", "Your new auction <"+data['title']+"> has been created",
+                  FROM_EMAIL, [request.user.email], fail_silently=False)
         return render_to_response('done.html', {'message': message,
                                                 'username': request.user.username},
                                   context_instance=RequestContext(request))

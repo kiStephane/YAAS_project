@@ -1,4 +1,5 @@
 __author__ = 'stephaneki'
+from django.core import mail
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
@@ -59,14 +60,6 @@ class CreateAuctionViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertFormError(resp, 'form', 'deadline', "Deadline should be at least 72h after creation.")
 
-        resp = self.client.post("/createauction/", {"title": "New auction",
-                                                    "description": "Auction description",
-                                                    "creation_date": "10/10/14",
-                                                    "deadline": "10/13/14",
-                                                    "minimum_price": 100.0})
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "confirmation.html", "The data is valid then the user should confirm or not")
-
     def test_send_confirmation_if_post_data_valid(self):
         self.sign_in_first()
         resp = self.client.post("/createauction/", {"title": "New auction",
@@ -83,13 +76,30 @@ class CreateAuctionViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'done.html')
         new_auction = Auction.objects.get(title="New auction")
-        self.assertIsNot(new_auction, None)
+        self.assertIsNotNone(new_auction)
         self.assertEqual(new_auction.description, "Auction description")
 
     def test_if_user_select_no_auction_not_created(self):
         self.test_send_confirmation_if_post_data_valid()
+        number_before = Auction.objects.all().count()
         resp = self.client.post("/saveauction/", {"option": 'No'})
         self.assertEqual(resp.status_code, 200)
+        number_after = Auction.objects.all().count()
+        self.assertEqual(number_after, number_before)
         self.assertTemplateUsed(resp, 'createauction.html')
         auctions = Auction.objects.filter(title="New auction")
         self.assertEqual(len(auctions), 0, "The object has does not exit in the database ")
+
+    def test_seller_received_email_if_auction_saved(self):
+        self.sign_in_first()
+        self.client.post("/createauction/", {"title": "New auction",
+                                             "description": "Auction description",
+                                             "creation_date": "10/10/14",
+                                             "deadline": "10/13/14",
+                                             "minimum_price": 100})
+        self.client.post("/saveauction/", {"option": 'Yes'})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox[0].to), 1)
+        self.assertEqual(mail.outbox[0].to[0], self.my_user.email)
+        self.assertEqual(mail.outbox[0].subject, 'New auction <New auction> created')
