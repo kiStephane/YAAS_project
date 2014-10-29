@@ -57,8 +57,14 @@ class EditProfileTestCase(TestCase):
         self.assertFormError(resp, 'form', 'email', "Enter a valid email address.")
         self.assertTemplateUsed(resp, 'editprofile.html')
 
+    def test_form_sent_in_response_to_get_request(self):
+        self.sign_in_first()
+        resp = self.client.post("/editprofile/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed("editprofile.html")
 
-class SignInViewTestCase(TestCase):
+
+class SignInAndSignOutViewTestCase(TestCase):
     def test_sign_in_form_is_reachable(self):
         resp = self.client.get("/signin/")
         self.assertEqual(resp.status_code, 200)
@@ -72,6 +78,11 @@ class SignInViewTestCase(TestCase):
         resp = self.client.post("/signin/", {'username': 'test', 'password': 'test'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['error'], "Wrong username or password ! ! !")
+
+    def test_redirected_to_home_after_logout(self):
+        self.client.login(username="xx", password="xx")
+        resp = self.client.get("/logout/")
+        self.assertRedirects(resp, '/home/')
 
 
 class SearchViewTestCase(TestCase):
@@ -107,6 +118,11 @@ class EditAuctionTestCase(TestCase):
 
     def sign_in_first(self):
         return self.client.login(username="xx", password="xx")
+
+    def test_only_post_and_get_method_are_handled(self):
+        self.sign_in_first()
+        resp = self.client.put('/editauction/1', {'description': 'my new description'})
+        self.assertEqual(resp.status_code, 400)
 
     def test_seller_should_login_first(self):
         resp = self.client.post('/editauction/1', {'description': 'my new description'})
@@ -190,9 +206,14 @@ class ChangePasswordTestCase(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, '/profile/')
 
+    def test_password_form_sent_through_get_method(self):
+        self.sign_in_first()
+        resp = self.client.get('/changepassword/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed("changepassword.html")
+
 
 class SelectLanguageTestCase(TestCase):
-
     def test_language_selecting(self):
         login_successful = self.client.login(username="xx", password="xx")
         self.assertTrue(login_successful)
@@ -201,7 +222,7 @@ class SelectLanguageTestCase(TestCase):
         self.assertEqual(self.client.session.get('lang'), 'fr')
         self.assertRedirects(resp, '/home/')
         self.assertContains(self.client.get('/home/'), 'Titre')
-        resp = self.client.get('/selectlang/en')
+        self.client.get('/selectlang/en')
 
 
 

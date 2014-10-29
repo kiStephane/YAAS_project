@@ -11,7 +11,7 @@
             "last_login": "2014-10-05T17:13:59.408Z",
             "groups": [],
             "user_permissions": [28],
-            "password": "pbkdf2_sha256$10000$2Kw7WbZyir8E$0vOBN10GQnBIvh5218rHC+L/6uojzj9yOdLDz4dF+fg=",
+            "password": "md5$Cg2OJCgVkdNn$5ffd27e0f60a59a5b7839641da97f6a5",
             "email": "",
             "date_joined": "2014-10-05T17:10:26.304Z"}
     },
@@ -28,7 +28,7 @@
             "last_login": "2014-10-05T17:13:59.408Z",
             "groups": [],
             "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$39r16Mvck5d3$IeVuxLaFH83Ht9wEBIPU6n+MhkYQtp8Pp1Ql1LLPsB0=",
+            "password": "md5$g2E0yCeBIQBY$b410f3c73da94223ab4f4e7d2dc9410b",
             "email": "",
             "date_joined": "2014-10-05T17:10:26.304Z"}
     },
@@ -45,7 +45,7 @@
             "last_login": "2014-10-07T13:19:22.620Z",
             "groups": [],
             "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$2Kw7WbZyir8E$0vOBN10GQnBIvh5218rHC+L/6uojzj9yOdLDz4dF+fg=",
+            "password": "md5$Cg2OJCgVkdNn$5ffd27e0f60a59a5b7839641da97f6a5",
             "email": "ski@test.fr",
             "date_joined": "2014-10-07T08:59:04.102Z"}
     },
@@ -62,7 +62,7 @@
             "last_login": "2014-10-07T13:19:22.620Z",
             "groups": [],
             "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$2Kw7WbZyir8E$0vOBN10GQnBIvh5218rHC+L/6uojzj9yOdLDz4dF+fg=",
+            "password": "md5$Cg2OJCgVkdNn$5ffd27e0f60a59a5b7839641da97f6a5",
             "email": "ski@test.fr",
             "date_joined": "2014-10-07T08:59:04.102Z"}
     },
