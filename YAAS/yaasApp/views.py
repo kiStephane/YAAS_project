@@ -126,6 +126,9 @@ def change_password(request):
 
 @login_required
 def edit_profile(request):
+    """
+    This views allow the user to change he/she email address.
+    """
     if request.POST:
         form = EditProfileForm(request.POST, instance=request.user)
         if form.is_valid():

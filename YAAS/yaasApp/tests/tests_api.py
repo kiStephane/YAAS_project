@@ -1,16 +1,14 @@
+__author__ = 'stephaneki'
 import base64
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase
 from django.core import mail
+from django.test import TestCase
+from django.test.client import Client
 
 from yaasApp.models import Auction
 from yaasApp.serializers import AuctionSerializer
-
-__author__ = 'stephaneki'
-
-from django.test import TestCase
-from django.test.client import Client
 
 
 class SearchApiTestCase(TestCase):

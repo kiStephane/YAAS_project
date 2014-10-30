@@ -1,12 +1,9 @@
+__author__ = 'stephaneki'
 from django.contrib.auth.models import User
 from django.core import mail
+from django.test import TestCase, Client
 
 from yaasApp.models import Auction
-
-
-__author__ = 'stephaneki'
-
-from django.test import TestCase, Client
 
 
 class BanAuctionTestCase(TestCase):
@@ -20,8 +17,6 @@ class BanAuctionTestCase(TestCase):
 
     def sign_in_first(self):
         return self.client.login(username=self.administrator.username, password="1")
-
-    # The seller and all the bidders are notified by email that the auction has been banned
 
     def test_only_administrator_can_ban(self):
         self.client.login(username="xx", password="xx")

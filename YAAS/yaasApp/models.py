@@ -12,7 +12,7 @@ class Auction(models.Model):
     state_label = {
         1: 'active',
         2: 'ban',
-        #3: 'due',
+        # 3: 'due',
         4: 'adjudicated'
     }
     title = models.CharField(max_length=30)
@@ -43,36 +43,25 @@ class Auction(models.Model):
 
     def last_bid(self):
         bids = self.bid_set.all()
-        if bids.count() == 0:
-            return None
-        else:
-            last = None
-            for bid in bids:
-                if last is None:
-                    last = bid
-                elif last.price < bid.price:
-                    last = bid
-            return last
+        last = None
+        for bid in bids:
+            if last is None:
+                last = bid
+            elif last.price < bid.price:
+                last = bid
+        return last
 
     def last_bid_price(self):
         last = self.last_bid()
-        if last:
-            return last.price
-        else:
-            return None
+        return last.price if last else None
 
     def last_bidder_username(self):
         last = self.last_bid()
-        if last:
-            return last.bidder.username
-        else:
-            return None
+        return last.bidder.username if last else None
 
     def minimum_bid_price(self):
-        if self.last_bid_price() is None:
-            return self.minimum_price + MINIMUM_BID_AUGMENTATION
-
-        return self.last_bid_price() + MINIMUM_BID_AUGMENTATION
+        return self.last_bid_price() + MINIMUM_BID_AUGMENTATION if self.last_bid_price() \
+            else self.minimum_price + MINIMUM_BID_AUGMENTATION
 
 
 class Bid(models.Model):

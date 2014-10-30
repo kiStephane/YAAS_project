@@ -1,9 +1,11 @@
 __author__ = 'stephaneki'
 import sys
-from django.contrib.auth.models import User
 from datetime import timedelta
+
+from django.contrib.auth.models import User
 from django.core.management import BaseCommand
 from django.utils import timezone
+
 from yaasApp.models import Auction, Bid
 
 
