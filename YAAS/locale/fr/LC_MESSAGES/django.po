@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-16 15:03+0300\n"
+"POT-Creation-Date: 2014-10-31 12:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,30 +18,74 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: templates/index.html:31
+#: templates/auction.html:18 templates/index.html:31
 msgid "Title"
 msgstr "Titre"
+
+#: templates/auction.html:21
+msgid "Description"
+msgstr "Description"
+
+#: templates/auction.html:24 templates/index.html:36
+msgid "State"
+msgstr "Etat"
 
 #: templates/index.html:32
 msgid "Seller"
 msgstr "Vendeur"
 
-#: yaasApp/views.py:98
+#: templates/index.html:33
+msgid "Deadline"
+msgstr "Date d'expiration"
+
+#: templates/index.html:34
+msgid "Minimum price"
+msgstr "Montant minimum"
+
+#: templates/index.html:35
+msgid "Last bid"
+msgstr "Dernière enchère"
+
+#: yaasApp/views.py:94
+msgid "You cannot edit this auction because you are not the seller"
+msgstr ""
+
+#: yaasApp/views.py:96
+msgid "This auction does not exists"
+msgstr ""
+
+#: yaasApp/views.py:106
 msgid "New User is created. Please Login"
 msgstr ""
 
-#: yaasApp/views.py:144
+#: yaasApp/views.py:155
 msgid "Wrong username or password ! ! !"
 msgstr ""
 
-#: yaasApp/views.py:148
+#: yaasApp/views.py:159
 msgid "Please Sign in"
 msgstr ""
 
-#: yaasApp/views.py:209
+#: yaasApp/views.py:244
 msgid "The auction you want to bid for does not exist !"
 msgstr ""
 
-#: yaasApp/views.py:212
+#: yaasApp/views.py:247
 msgid "You cannot bid because you are the seller !"
+msgstr ""
+
+#: yaasApp/views.py:300
+msgid "The auction description has changed"
+msgstr ""
+
+#: yaasApp/views.py:329
+msgid "New bid registered !!!"
+msgstr ""
+
+#: yaasApp/views.py:339
+msgid "Someone bid before you. Bid again !"
+msgstr ""
+
+#: yaasApp/views.py:393 yaasApp/views.py:395
+msgid "Nothing found in the database"
 msgstr ""

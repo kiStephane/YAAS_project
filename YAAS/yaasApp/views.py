@@ -1,4 +1,6 @@
 # Create your views here.
+from datetime import timedelta
+
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
@@ -170,7 +172,7 @@ def show_profile(request):
         return HttpResponseRedirect('/signin/?next=%s' % request.path)
     else:
         user = request.user
-        auctions = user.auction_set.all()
+        auctions = user.auction_set.all().filter(state=1)
         bids = user.bid_set.all()
         message = request.session.get("message_to_profile")
         request.session["message_to_profile"] = None
@@ -229,9 +231,9 @@ def show_auction(request, a_id):
                                                        "username": request.user.username},
                                       context_instance=RequestContext(request))
         else:
-            request.session["error_to_home"] = "Cannot access this auction: BANNED"
+            request.session["error_to_home"] = "Cannot access this auction"
     else:
-        request.session["error_to_home"] = "Auction (id=" + str(a_id) + ") does not exist !"
+        request.session["error_to_home"] = "Auction (id=" + str(a_id) + ") is not accessible !"
     return HttpResponseRedirect("/home/")
 
 
@@ -267,7 +269,7 @@ def create_bid(request, a_id):
             if auction[0].last_bidder_username() == request.user.username:
                 request.session["message_to_profile"] = "You cannot bid for an already winning auction!"
                 return HttpResponseRedirect("/profile/")
-            elif auction[0].is_due():  # TODO remove comment
+            elif auction[0].is_due():
                 request.session["error_to_auction_show"] = "This auction is due"
                 return HttpResponseRedirect("/auction/" + str(auction[0].id) + "/")
 
@@ -277,6 +279,13 @@ def create_bid(request, a_id):
                 bid = Bid(price=int(cd["price"]), auction=auction[0], bidder=request.user, time=timezone.now())
                 bid.save()
                 message = "New bid has been saved"
+
+                # Soft deadline
+                delta = auction[0].deadline - timezone.now()
+                if delta < timedelta(minutes=5):
+                    a = Auction.objects.get(id=a_id)
+                    a.deadline += timedelta(minutes=5)
+                    a.save()
 
                 send_mail_to_seller(bid)
                 send_mail_to_last_bid_before_new_one(last_bid_before_this_one, bid)
@@ -298,8 +307,7 @@ def create_bid(request, a_id):
                                                            'username': request.user.username},
                                           context_instance=RequestContext(request))
         else:
-            return render_to_response('createbid.html', {'form': BidCreationForm(),
-                                                         'error': "Not valid data",
+            return render_to_response('createbid.html', {'form': form,
                                                          'last_bid_price': auction[0].last_bid_price(),
                                                          'username': request.user.username},
                                       context_instance=RequestContext(request))
@@ -376,7 +384,7 @@ def search(request):
         entry_query = get_query(query_string, ['title'])
         found_entries = None
         if entry_query:
-            found_entries = Auction.objects.filter(entry_query)
+            found_entries = Auction.objects.filter(entry_query).filter(state=1)
             request.session["search_result"] = found_entries
         error = None
 

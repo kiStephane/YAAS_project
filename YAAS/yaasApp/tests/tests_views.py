@@ -22,12 +22,12 @@ class ViewTestCase(TestCase):
     def test_only_active_auction_can_be_displayed(self):
         client = Client()
         resp = client.get("/auction/5")
-        self.assertEqual(client.session.get('error_to_home'), "Cannot access this auction: BANNED")
+        self.assertEqual(client.session.get('error_to_home'), "Cannot access this auction")
         self.assertRedirects(resp, '/home/')
 
     def test_if_auction_does_not_exist_redirect_user_to_home(self):
         resp = self.client.get("/auction/22")
-        message = "Auction (id=" + str(22) + ") does not exist !"
+        message = "Auction (id=" + str(22) + ") is not accessible !"
         self.assertEqual(self.client.session.get('error_to_home'), message)
         self.assertRedirects(resp, '/home/')
 

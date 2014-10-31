@@ -1,14 +1,13 @@
+__author__ = 'stephaneki'
 from django.core import mail
 import mock
 import pytz
-
-__author__ = 'stephaneki'
-
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.test.client import Client
-from yaasApp.models import Auction, Bid
 from django.utils import timezone
+
+from yaasApp.models import Auction, Bid
 
 
 class CreateBidViewTestCase(TestCase):
@@ -22,14 +21,11 @@ class CreateBidViewTestCase(TestCase):
 
     def sign_in_first(self, username=None, password=None):
         if username is None or password is None:
-            login_successful = self.client.login(username=self.my_user.username, password="1")
+            return self.client.login(username=self.my_user.username, password="1")
         else:
-            login_successful = self.client.login(username=username, password=password)
+            return self.client.login(username=username, password=password)
 
-        self.assertTrue(login_successful)
-        return login_successful
-
-    def test_if_not_registered_then_cannot_bid(self):
+    def test_if_not_logged_in_then_cannot_bid(self):
         resp = self.client.get("/createbid/2")
         self.assertEqual(resp.status_code, 302, "The user is redirected because he is not logged in")
         self.assertRedirects(resp, "/signin/?next=/createbid/2")
@@ -40,6 +36,12 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 302, "The user is redirected because the auction does not exist")
         session_error = self.client.session.get("error_to_home")
         self.assertTrue(session_error == "The auction you want to bid for does not exist !")
+        self.assertRedirects(resp, "/home/")
+
+    def test_can_only_bid_active_auction(self):
+        self.sign_in_first()
+        resp = self.client.get("/createbid/5")
+        self.assertEqual(resp.status_code, 302, "The user is redirected because the auction is not active")
         self.assertRedirects(resp, "/home/")
 
     def test_seller_cannot_bid_for_his_own_auction(self):
@@ -54,15 +56,13 @@ class CreateBidViewTestCase(TestCase):
         self.sign_in_first()
         resp = self.client.post("/createbid/1", {"auction_id": 1,
                                                  "price": 3000})
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.context['error'] == "Not valid data")
+        self.assertFormError(resp, 'form', 'price', 'The bid must be superior to the minimum price')
 
     def test_first_bid_should_be_greater_than_minimum_price(self):
         self.sign_in_first()
         resp = self.client.post("/createbid/2", {"auction_id": 2,
                                                  "price": 300})
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.context['error'] == "Not valid data")
+        self.assertFormError(resp, 'form', 'price', 'The bid must be superior to the minimum price')
 
     @mock.patch('django.utils.timezone.now')
     def test_bid_confirmation_should_contain_auction_description(self, my_mock):
@@ -79,10 +79,10 @@ class CreateBidViewTestCase(TestCase):
         self.sign_in_first()
         resp = self.client.post("/createbid/1", {"auction_id": 1,
                                                  "price": 7000})
-        self.assertEqual(resp.status_code, 302, "cannot bid for already winning auction")
-        error = self.client.session.get("message_to_profile")
-        self.assertTrue(error == "You cannot bid for an already winning auction!")
-        self.assertRedirects(resp, "/profile/")  # message_to_profile
+        self.assertEqual(resp.status_code, 302, "Cannot bid for already winning auction")
+        self.assertTrue(
+            self.client.session.get("message_to_profile") == "You cannot bid for an already winning auction!")
+        self.assertRedirects(resp, "/profile/")
 
     @mock.patch('django.utils.timezone.now')
     def test_email_send_to_seller_if_new_bid_registered(self, my_mock):
@@ -104,7 +104,6 @@ class CreateBidViewTestCase(TestCase):
     @mock.patch('django.utils.timezone.now')
     def test_email_sends_to_last_bidder_if_new_bid_registered(self, my_mock):
         my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 20, 17, 10, 12))
-        #print timezone.now()
         self.sign_in_first(username="ski2", password="1")
         bid = Bid.objects.get(id=1)
         self.client.get("/createbid/1")
@@ -135,8 +134,19 @@ class CreateBidViewTestCase(TestCase):
         self.assertEqual(mail.outbox[2].to[0], Auction.objects.get(id=1).last_bid().bidder.email)
         self.assertEqual(mail.outbox[2].subject, 'New bid saved. Auction <TOYOTA Carina>')
 
-    def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self):
-        self.assertTrue(True)
+    @mock.patch('django.utils.timezone.now')
+    def test_extend_deadline_for_five_minute_if_last_bid_during_last_five_minutes(self, my_mock):
+        my_mock.return_value = pytz.timezone("UTC").localize(timezone.datetime(2014, 10, 24, 17, 6, 0))
+        auction = Auction.objects.get(id=1)
+        self.assertEqual(auction.bid_set.count(), 1)
+        self.sign_in_first(username="ski2", password="1")
+        self.client.get("/createbid/1")
+        resp = self.client.post("/createbid/1", {"auction_id": 1,
+                                                 "price": 10000})
+        self.assertEqual(resp.status_code, 200)
+        self.client.post("/savebid/", {"option": "Yes"})
+        self.assertEqual(auction.bid_set.count(), 2)
+        self.assertEqual(Auction.objects.get(id=1).deadline.minute, 15)
 
     @mock.patch('django.utils.timezone.now')
     def test_if_no_last_bidder_then_no_email_sending(self, my_mock):
