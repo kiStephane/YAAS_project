@@ -37,5 +37,8 @@
     <p>{{ last_bid }}</p> <br>
 
     <a class="btn btn-lg btn-primary btn-block" href="/createbid/{{ auction.id }}"> Bid for this auction </a>
+    {% if can_ban %}
+    <a class="btn btn-lg btn-danger btn-block" href="/banauction/{{ auction.id }}"> Ban </a>
+    {% endif %}
     <br>
 {% endblock %}

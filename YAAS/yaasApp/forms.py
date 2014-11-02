@@ -16,7 +16,7 @@ class EditProfileForm(forms.ModelForm):
 
 class AuctionCreationForm(forms.Form):
     title = forms.CharField(label='Title', max_length=30, widget=forms.TextInput(attrs={'class': 'form-control',
-                                                                                        'placeholder': 'new auction'}))
+                                                                                        'placeholder': 'New auction'}))
 
     description = forms.CharField(label='Description', required=False,
                                   widget=forms.Textarea(attrs={'class': 'form-control'}))

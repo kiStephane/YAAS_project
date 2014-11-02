@@ -45,7 +45,7 @@
     {%  if bid.auction.last_bidder_username != username%}
         <tr class="danger">
             <td>{{ bid.id }}</td>
-            <td><a href="/auction/{{ auction.id }}">{{ bid.auction.title }}</a></td>
+            <td><a href="/auction/{{ bid.auction.id }}">{{ bid.auction.title }}</a></td>
             <td>{{ bid.auction.seller.username }}</td>
             <td>{{ bid.auction.deadline }}</td>
             <td>{{ bid.auction.last_bid_price }}</td>
@@ -54,7 +54,7 @@
     {% else %}
         <tr>
             <td>{{ bid.id }}</td>
-            <td><a href="/auction/{{ auction.id }}">{{ bid.auction.title }}</a></td>
+            <td><a href="/auction/{{ bid.auction.id }}">{{ bid.auction.title }}</a></td>
             <td>{{ bid.auction.seller.username }}</td>
             <td>{{ bid.auction.deadline }}</td>
             <td>{{ bid.auction.last_bid_price }}</td>

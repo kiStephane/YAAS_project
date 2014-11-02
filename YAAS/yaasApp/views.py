@@ -104,7 +104,7 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            request.session["message_to_home"] = _("New User is created. Please Login")
+            request.session["message_to_home"] = _("New User created. Please Login")
             return HttpResponseRedirect("/home/")
     else:
         form = UserCreationForm()
@@ -117,7 +117,7 @@ def change_password(request):
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
             form.save()
-            request.session["message_to_profile"] = "Password set ! ! !"
+            request.session["message_to_profile"] = "Password modified ! ! !"
             return HttpResponseRedirect("/profile/")
     else:
         form = PasswordChangeForm(user=request.user)
@@ -228,7 +228,8 @@ def show_auction(request, a_id):
             return render_to_response("auction.html", {"auction": auction[0],
                                                        'error': error,
                                                        "last_bid": last,
-                                                       "username": request.user.username},
+                                                       "username": request.user.username,
+                                                       "can_ban": request.user.has_perms(['can_ban'])},
                                       context_instance=RequestContext(request))
         else:
             request.session["error_to_home"] = "Cannot access this auction"
@@ -271,7 +272,7 @@ def create_bid(request, a_id):
                 return HttpResponseRedirect("/profile/")
             elif auction[0].is_due():
                 request.session["error_to_auction_show"] = "This auction is due"
-                return HttpResponseRedirect("/auction/" + str(auction[0].id) + "/")
+                return HttpResponseRedirect("/auction/" + str(auction[0].id))
 
             elif request.session.get("auction_version") == auction[0].version and request.session.get(
                     "number_of_bids") == len(auction[0].bid_set.all()):
@@ -309,6 +310,8 @@ def create_bid(request, a_id):
         else:
             return render_to_response('createbid.html', {'form': form,
                                                          'last_bid_price': auction[0].last_bid_price(),
+                                                         'minimum_bid': auction[0].minimum_bid_price(),
+                                                         'auction_id': auction[0].id,
                                                          'username': request.user.username},
                                       context_instance=RequestContext(request))
 
